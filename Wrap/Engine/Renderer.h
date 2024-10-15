@@ -4,6 +4,10 @@
 
 #include "vulkan/vulkan.h"
 
+constexpr std::array<const char*, 1 > validation_layers = {
+	"VK_LAYER_KHRONOS_validation"
+};
+
 class Renderer
 {
 public:
@@ -11,6 +15,9 @@ public:
 	~Renderer();
 
 	void vulkanInit();
+	void cleanUp();
+
+	bool checkValidationSupport();
 
 private:
 	void createInstance();

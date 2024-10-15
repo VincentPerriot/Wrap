@@ -1,5 +1,11 @@
 #include "Renderer.h"
 
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
+
 //----------------------------------------------------------------------------------
 Renderer::Renderer()
 {
@@ -21,6 +27,11 @@ void Renderer::vulkanInit()
 //----------------------------------------------------------------------------------
 void Renderer::createInstance()
 {
+	if ( enableValidationLayers )
+	{
+		assert( checkValidationSupport() );
+	}
+
 	const VkApplicationInfo appInfo = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		.pNext = nullptr,
@@ -39,10 +50,38 @@ void Renderer::createInstance()
 		.pNext = nullptr,
 		.flags = 0,
 		.pApplicationInfo = &appInfo,
-		.enabledLayerCount = 0,
-		.ppEnabledLayerNames = nullptr,
+		.enabledLayerCount = (u32)validation_layers.size(),
+		.ppEnabledLayerNames = validation_layers.data(),
 		.enabledExtensionCount = glfwExtensionCount,
 		.ppEnabledExtensionNames = glfwExtensions.data()
 	};
+
+	VkResult res = vkCreateInstance( &createInfo, nullptr, &m_Instance );
+
+	assert( res == VK_SUCCESS );
 }
 
+//----------------------------------------------------------------------------------
+void Renderer::cleanUp()
+{
+	vkDestroyInstance( m_Instance, nullptr );
+}
+
+//----------------------------------------------------------------------------------
+bool Renderer::checkValidationSupport()
+{
+	u32 layerCount = 0;
+	vkEnumerateInstanceLayerProperties( &layerCount, nullptr );
+
+	std::vector<VkLayerProperties> availableLayers( layerCount );
+	vkEnumerateInstanceLayerProperties( &layerCount, availableLayers.data() );
+
+	// Validation layers defined as constexpr in .h file
+	for ( const auto& layer : validation_layers )
+	{
+		auto it = std::ranges::find( availableLayers, layer, &VkLayerProperties::layerName );
+		if ( it == availableLayers.end() ) return false;
+	}
+
+	return true;
+}
