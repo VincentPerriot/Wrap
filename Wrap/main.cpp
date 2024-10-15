@@ -3,24 +3,16 @@
 
 #include <iostream>
 
+#include "Platforms/Windows/Display.h"
+#include "Utils/Common.h"
+
+#include "Warp/TriangleApp.h"
+
 int main() {
-	glfwInit();
 
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Vulkan window", nullptr, nullptr);
+	std::unique_ptr<TriangleApp> app = std::make_unique<TriangleApp>();
 
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-	std::cout << extensionCount << " extensions supported\n";
-
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
-	}
-
-	glfwDestroyWindow(window);
-
-	glfwTerminate();
+	app->run();
 
 	return 0;
 }
