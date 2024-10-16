@@ -3,6 +3,7 @@
 #include "../Utils/Common.h"
 
 #include "vulkan/vulkan.h"
+#include "GLFW/glfw3.h"
 
 constexpr std::array<const char*, 1 > validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -21,6 +22,8 @@ public:
 
 private:
 	void createInstance();
+
+	std::vector<const char*> getRequiredExtensions();
 
 	VkInstance m_Instance;
 };

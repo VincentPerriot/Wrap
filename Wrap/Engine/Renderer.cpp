@@ -42,23 +42,39 @@ void Renderer::createInstance()
 		.apiVersion = VK_API_VERSION_1_0
 	};
 
-	u32 glfwExtensionCount = 0;
-	const std::vector<const char*> glfwExtensions{};
+	auto glfwExtensions = getRequiredExtensions();
 
 	const VkInstanceCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
 		.pApplicationInfo = &appInfo,
-		.enabledLayerCount = (u32)validation_layers.size(),
-		.ppEnabledLayerNames = validation_layers.data(),
-		.enabledExtensionCount = glfwExtensionCount,
-		.ppEnabledExtensionNames = glfwExtensions.data()
+		.enabledLayerCount = enableValidationLayers ? (u32)validation_layers.size() : 0,
+		.ppEnabledLayerNames = enableValidationLayers ? validation_layers.data() : nullptr,
+		.enabledExtensionCount = enableValidationLayers ? (u32)glfwExtensions.size() : 0,
+		.ppEnabledExtensionNames = enableValidationLayers ? glfwExtensions.data() : nullptr
 	};
 
 	VkResult res = vkCreateInstance( &createInfo, nullptr, &m_Instance );
 
 	assert( res == VK_SUCCESS );
+}
+
+//----------------------------------------------------------------------------------
+std::vector<const char*> Renderer::getRequiredExtensions()
+{
+	u32 glfwExtCount = 0;
+	const char** glfwExt;
+
+	glfwExt = glfwGetRequiredInstanceExtensions( &glfwExtCount );
+
+	// range based constructor
+	std::vector<const char*> extensions( glfwExt, glfwExt + glfwExtCount );
+
+	if ( enableValidationLayers )
+		extensions.emplace_back( VK_EXT_DEBUG_REPORT_EXTENSION_NAME );
+
+	return extensions;
 }
 
 //----------------------------------------------------------------------------------
@@ -79,7 +95,8 @@ bool Renderer::checkValidationSupport()
 	// Validation layers defined as constexpr in .h file
 	for ( const auto& layer : validation_layers )
 	{
-		auto it = std::ranges::find( availableLayers, layer, &VkLayerProperties::layerName );
+		auto it = std::ranges::find_if( availableLayers, [layer]( VkLayerProperties availableLayer ) {
+			return strcmp( layer, availableLayer.layerName ); } );
 		if ( it == availableLayers.end() ) return false;
 	}
 
