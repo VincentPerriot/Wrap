@@ -14,6 +14,8 @@ Display::Display( u32 _width, u32 _height, const std::string& _title )
 //--------------------------------------------------------------------------------
 Display::~Display()
 {
+	glfwDestroyWindow( m_pWindow );
+	glfwTerminate();
 }
 
 //--------------------------------------------------------------------------------
@@ -39,13 +41,6 @@ void Display::createWindow()
 		}
 	);
 
-}
-
-//--------------------------------------------------------------------------------
-void Display::cleanUp()
-{
-	glfwDestroyWindow( m_pWindow );
-	glfwTerminate();
 }
 
 // Could leave these 2 as direct calls in the App class ( see later what is more convenient )

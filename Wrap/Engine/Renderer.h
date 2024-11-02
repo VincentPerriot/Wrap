@@ -22,12 +22,12 @@ private:
 	void createInstance();
 	void setUpDebugMessenger();
 
-	VkResult createDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo,
-		const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger);
-	void destroyDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo,
-		const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger);
+	VkResult createDebugUtilsMessenger( VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
+		const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT& _messenger );
+	void destroyDebugUtilsMessenger( VkInstance& _instance, VkDebugUtilsMessengerEXT& _messenger, const VkAllocationCallbacks* _cbAlloc );
 
 	std::vector<const char*> getRequiredExtensions();
 
 	VkInstance m_Instance;
+	VkDebugUtilsMessengerEXT m_DebugMessenger;
 };

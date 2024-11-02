@@ -16,9 +16,10 @@ Renderer::Renderer()
 //----------------------------------------------------------------------------------
 Renderer::~Renderer()
 {
-	vkDestroyInstance(m_Instance, nullptr);
-	if (enableValidationLayers)
-		destroyDebugUtilsMessenger(_instance, );
+	if ( enableValidationLayers )
+		//destroyDebugUtilsMessenger( m_Instance, m_DebugMessenger, nullptr );
+		
+	vkDestroyInstance( m_Instance, nullptr );
 }
 
 //----------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ void Renderer::createInstance()
 //----------------------------------------------------------------------------------
 void Renderer::setUpDebugMessenger()
 {
-	if (!enableValidationLayers)
+	if ( !enableValidationLayers )
 		return;
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo = {
@@ -73,6 +74,7 @@ void Renderer::setUpDebugMessenger()
 		.pUserData = nullptr,
 	};
 
+	assert( createDebugUtilsMessenger( m_Instance, &createInfo, nullptr, m_DebugMessenger ) == VK_SUCCESS );
 }
 
 //----------------------------------------------------------------------------------
@@ -112,22 +114,22 @@ bool Renderer::checkValidationSupport()
 }
 
 //----------------------------------------------------------------------------------
-VkResult createDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo, 
-	const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger)
+VkResult Renderer::createDebugUtilsMessenger( VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
+	const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT& _messenger )
 {
-	auto fn = ( PFN_vkCreateDebugUtilsMessengerEXT )( vkGetInstanceProcAddr( _instance, "vkCreateDebugUtilsMessengerEXT" ) );
+	auto fn = (PFN_vkCreateDebugUtilsMessengerEXT)( vkGetInstanceProcAddr( _instance, "vkCreateDebugUtilsMessengerEXT" ) );
 
-	if (fn)
-		return fn(_instance, &_createInfo, &_cbAlloc, &_messenger);
+	if ( fn )
+		return fn( _instance, _createInfo, _cbAlloc, &_messenger );
 	else
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 //----------------------------------------------------------------------------------
-void Renderer::destroyDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo, const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger)
+void Renderer::destroyDebugUtilsMessenger( VkInstance& _instance, VkDebugUtilsMessengerEXT& _messenger, const VkAllocationCallbacks* _cbAlloc )
 {
-	auto fn = (PFN_vkDestroyDebugUtilsMessengerEXT)(vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT"));
+	auto fn = (PFN_vkDestroyDebugUtilsMessengerEXT)( vkGetInstanceProcAddr( _instance, "vkCreateDebugUtilsMessengerEXT" ) );
 
-	if (fn)
-		fn(_instance, &_createInfo, &_cbAlloc, &_messenger);
+	if ( fn )
+		fn( _instance, _messenger, _cbAlloc );
 }

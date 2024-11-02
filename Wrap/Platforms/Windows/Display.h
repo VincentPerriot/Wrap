@@ -16,8 +16,6 @@ public:
 	bool shouldClose() const;
 	void pollEvents();
 
-	void cleanUp();
-
 private:
 	const std::string m_Title{};
 

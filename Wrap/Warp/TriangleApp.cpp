@@ -18,8 +18,6 @@ void TriangleApp::run()
 	initVulkan();
 
 	mainLoop();
-
-	cleanUp();
 }
 
 //--------------------------------------------------------------------
@@ -36,10 +34,4 @@ void TriangleApp::mainLoop()
 	{
 		m_pDisplay->pollEvents();
 	}
-}
-
-//--------------------------------------------------------------------
-void TriangleApp::cleanUp()
-{
-	m_pDisplay->cleanUp();
 }

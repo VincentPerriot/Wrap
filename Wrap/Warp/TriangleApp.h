@@ -20,8 +20,6 @@ private:
 
 	void mainLoop();
 
-	void cleanUp();
-
 	std::unique_ptr<Display> m_pDisplay;
 	std::unique_ptr<Renderer> m_pRenderer;
 };
