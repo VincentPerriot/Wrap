@@ -10,18 +10,15 @@ const bool enableValidationLayers = true;
 Renderer::Renderer()
 {
 	createInstance();
+	setUpDebugMessenger();
 }
 
 //----------------------------------------------------------------------------------
 Renderer::~Renderer()
 {
-
-}
-
-//----------------------------------------------------------------------------------
-void Renderer::vulkanInit()
-{
-
+	vkDestroyInstance(m_Instance, nullptr);
+	if (enableValidationLayers)
+		destroyDebugUtilsMessenger(_instance, );
 }
 
 //----------------------------------------------------------------------------------
@@ -61,6 +58,24 @@ void Renderer::createInstance()
 }
 
 //----------------------------------------------------------------------------------
+void Renderer::setUpDebugMessenger()
+{
+	if (!enableValidationLayers)
+		return;
+
+	VkDebugUtilsMessengerCreateInfoEXT createInfo = {
+		.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+		.pNext = nullptr,
+		.flags = 0,
+		.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+		.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
+		.pfnUserCallback = (PFN_vkDebugUtilsMessengerCallbackEXT)VulkanDebug::debugCallback,
+		.pUserData = nullptr,
+	};
+
+}
+
+//----------------------------------------------------------------------------------
 std::vector<const char*> Renderer::getRequiredExtensions()
 {
 	u32 glfwExtCount = 0;
@@ -68,19 +83,12 @@ std::vector<const char*> Renderer::getRequiredExtensions()
 
 	glfwExt = glfwGetRequiredInstanceExtensions( &glfwExtCount );
 
-	// range based constructor
 	std::vector<const char*> extensions( glfwExt, glfwExt + glfwExtCount );
 
 	if ( enableValidationLayers )
 		extensions.emplace_back( VK_EXT_DEBUG_REPORT_EXTENSION_NAME );
 
 	return extensions;
-}
-
-//----------------------------------------------------------------------------------
-void Renderer::cleanUp()
-{
-	vkDestroyInstance( m_Instance, nullptr );
 }
 
 //----------------------------------------------------------------------------------
@@ -101,4 +109,25 @@ bool Renderer::checkValidationSupport()
 	}
 
 	return true;
+}
+
+//----------------------------------------------------------------------------------
+VkResult createDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo, 
+	const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger)
+{
+	auto fn = ( PFN_vkCreateDebugUtilsMessengerEXT )( vkGetInstanceProcAddr( _instance, "vkCreateDebugUtilsMessengerEXT" ) );
+
+	if (fn)
+		return fn(_instance, &_createInfo, &_cbAlloc, &_messenger);
+	else
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+}
+
+//----------------------------------------------------------------------------------
+void Renderer::destroyDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo, const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger)
+{
+	auto fn = (PFN_vkDestroyDebugUtilsMessengerEXT)(vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT"));
+
+	if (fn)
+		fn(_instance, &_createInfo, &_cbAlloc, &_messenger);
 }

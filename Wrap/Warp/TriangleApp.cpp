@@ -42,5 +42,4 @@ void TriangleApp::mainLoop()
 void TriangleApp::cleanUp()
 {
 	m_pDisplay->cleanUp();
-	m_pRenderer->cleanUp();
 }

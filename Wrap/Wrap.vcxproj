@@ -147,6 +147,7 @@
     <ClCompile Include="Warp\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Debug.h" />
     <ClInclude Include="Engine\Renderer.h" />
     <ClInclude Include="Warp\TriangleApp.h" />
     <ClInclude Include="Utils\Common.h" />

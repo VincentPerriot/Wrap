@@ -4,6 +4,7 @@
 
 #include "vulkan/vulkan.h"
 #include "GLFW/glfw3.h"
+#include "Debug.h"
 
 constexpr std::array<const char*, 1 > validation_layers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -15,13 +16,16 @@ public:
 	Renderer();
 	~Renderer();
 
-	void vulkanInit();
-	void cleanUp();
-
 	bool checkValidationSupport();
 
 private:
 	void createInstance();
+	void setUpDebugMessenger();
+
+	VkResult createDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo,
+		const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger);
+	void destroyDebugUtilsMessenger(const VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT& _createInfo,
+		const VkAllocationCallbacks& _cbAlloc, VkDebugUtilsMessengerEXT& _messenger);
 
 	std::vector<const char*> getRequiredExtensions();
 
