@@ -20,6 +20,7 @@ public:
 
 private:
 	void createInstance();
+	void setupPhysicalDevice();
 
 	VkResult createDebugUtilsMessenger( VkInstance _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
 		const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT* _messenger );
@@ -29,4 +30,5 @@ private:
 
 	VkInstance m_Instance;
 	VkDebugUtilsMessengerEXT m_DebugMessenger;
+	VkPhysicalDevice m_PhysicalDevice;
 };

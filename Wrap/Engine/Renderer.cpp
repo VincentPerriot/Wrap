@@ -10,6 +10,7 @@ const bool enableValidationLayers = true;
 Renderer::Renderer()
 {
 	createInstance();
+	setupPhysicalDevice();
 }
 
 //----------------------------------------------------------------------------------
@@ -18,6 +19,7 @@ Renderer::~Renderer()
 	if ( enableValidationLayers )
 		destroyDebugUtilsMessenger( m_Instance, m_DebugMessenger, nullptr );
 		
+	m_PhysicalDevice = VK_NULL_HANDLE;
 	vkDestroyInstance( m_Instance, nullptr );
 }
 
@@ -65,6 +67,62 @@ void Renderer::createInstance()
 	assert( vkCreateInstance( &createInfo, nullptr, &m_Instance ) == VK_SUCCESS );
 	if ( enableValidationLayers )
 		assert( createDebugUtilsMessenger( m_Instance, &debugCreateInfo, nullptr, &m_DebugMessenger ) == VK_SUCCESS );
+}
+
+//----------------------------------------------------------------------------------
+void Renderer::setupPhysicalDevice()
+{
+	u32 numDevices;
+	vkEnumeratePhysicalDevices( m_Instance, &numDevices, nullptr );
+	std::vector<VkPhysicalDevice> devices( numDevices );
+	vkEnumeratePhysicalDevices( m_Instance, &numDevices, devices.data() );
+
+	u32 baseScore = 0;
+
+	auto rateDevice = []( VkPhysicalDeviceProperties props, VkPhysicalDeviceFeatures features ){
+		u32 score = 0;
+		switch ( props.deviceType )
+		{
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			score += 10000;
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			score += 5000;
+			break;
+		default:
+			break;
+		}
+
+		// TODO ADD MORE FEATURE CHECKS
+		if ( features.geometryShader )
+			score += 100;
+
+		return score;
+	};
+
+	auto isBestDevice = [&baseScore, &rateDevice]( auto device ) {
+		VkPhysicalDeviceProperties props;
+		vkGetPhysicalDeviceProperties( device, &props );
+		VkPhysicalDeviceFeatures features;
+		vkGetPhysicalDeviceFeatures( device, &features );
+
+		u32 score = rateDevice( props, features );
+		if ( score > baseScore )
+		{
+			baseScore = score;
+			return true;
+		}
+
+		return false;
+	};
+
+	for ( const auto& device : devices )
+	{
+		if ( isBestDevice( device ) )
+			m_PhysicalDevice = device;
+	}
+
+	assert( m_PhysicalDevice != VK_NULL_HANDLE );
 }
 
 //----------------------------------------------------------------------------------
