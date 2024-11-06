@@ -20,11 +20,10 @@ public:
 
 private:
 	void createInstance();
-	void setUpDebugMessenger();
 
-	VkResult createDebugUtilsMessenger( VkInstance& _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
-		const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT& _messenger );
-	void destroyDebugUtilsMessenger( VkInstance& _instance, VkDebugUtilsMessengerEXT& _messenger, const VkAllocationCallbacks* _cbAlloc );
+	VkResult createDebugUtilsMessenger( VkInstance _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
+		const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT* _messenger );
+	void destroyDebugUtilsMessenger( VkInstance _instance, VkDebugUtilsMessengerEXT _messenger, const VkAllocationCallbacks* _cbAlloc );
 
 	std::vector<const char*> getRequiredExtensions();
 
