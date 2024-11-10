@@ -11,6 +11,7 @@ Renderer::Renderer()
 {
 	createInstance();
 	setupPhysicalDevice();
+	createLogicalDevice();
 }
 
 //----------------------------------------------------------------------------------
@@ -100,29 +101,67 @@ void Renderer::setupPhysicalDevice()
 		return score;
 	};
 
-	auto isBestDevice = [&baseScore, &rateDevice]( auto device ) {
+
+	for ( const auto& device : devices )
+	{
 		VkPhysicalDeviceProperties props;
 		vkGetPhysicalDeviceProperties( device, &props );
 		VkPhysicalDeviceFeatures features;
 		vkGetPhysicalDeviceFeatures( device, &features );
 
 		u32 score = rateDevice( props, features );
+
 		if ( score > baseScore )
 		{
 			baseScore = score;
-			return true;
-		}
-
-		return false;
-	};
-
-	for ( const auto& device : devices )
-	{
-		if ( isBestDevice( device ) )
 			m_PhysicalDevice = device;
+		}
 	}
 
-	assert( m_PhysicalDevice != VK_NULL_HANDLE );
+	auto isDeviceSuitable = [this]( VkPhysicalDevice _device ) {
+		QueueFamilyIndices indices = findQueueFamilies( _device );
+		return indices.verifyGraphics();
+	};
+
+	assert( m_PhysicalDevice != VK_NULL_HANDLE && isDeviceSuitable( m_PhysicalDevice ) );
+}
+
+//----------------------------------------------------------------------------------
+void Renderer::createLogicalDevice()
+{
+	QueueFamilyIndices indices = findQueueFamilies( m_PhysicalDevice );
+
+	float queuePrio = 1.0f;
+	VkDeviceQueueCreateInfo queueCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.queueFamilyIndex = indices.m_graphics.value(),
+		.queueCount = 1,
+		.pQueuePriorities = &queuePrio
+	};
+	VkPhysicalDeviceFeatures features{};
+
+
+}
+
+//----------------------------------------------------------------------------------
+QueueFamilyIndices Renderer::findQueueFamilies( VkPhysicalDevice _device )
+{
+	QueueFamilyIndices indices;
+
+	u32 queueCount;
+	vkGetPhysicalDeviceQueueFamilyProperties( m_PhysicalDevice, &queueCount, nullptr);
+	std::vector<VkQueueFamilyProperties> queueFamilies( queueCount );
+	vkGetPhysicalDeviceQueueFamilyProperties( m_PhysicalDevice, &queueCount, queueFamilies.data() );
+
+	for ( const auto& queueFamily : queueFamilies )
+	{
+		if ( queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT )
+			indices.m_graphics = 1;
+	}
+
+	return indices;
 }
 
 //----------------------------------------------------------------------------------
