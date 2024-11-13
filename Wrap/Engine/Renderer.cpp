@@ -65,9 +65,9 @@ void Renderer::createInstance()
 		.ppEnabledExtensionNames = enableValidationLayers ? glfwExtensions.data() : nullptr
 	};
 
-	assert( vkCreateInstance( &createInfo, nullptr, &m_Instance ) == VK_SUCCESS );
+	VK_ASSERT( vkCreateInstance( &createInfo, nullptr, &m_Instance ) );
 	if ( enableValidationLayers )
-		assert( createDebugUtilsMessenger( m_Instance, &debugCreateInfo, nullptr, &m_DebugMessenger ) == VK_SUCCESS );
+		VK_ASSERT( createDebugUtilsMessenger( m_Instance, &debugCreateInfo, nullptr, &m_DebugMessenger ) );
 }
 
 //----------------------------------------------------------------------------------
@@ -141,7 +141,6 @@ void Renderer::createLogicalDevice()
 		.pQueuePriorities = &queuePrio
 	};
 	VkPhysicalDeviceFeatures features{};
-
 
 }
 

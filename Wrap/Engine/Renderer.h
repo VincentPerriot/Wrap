@@ -30,6 +30,7 @@ public:
 private:
 	void createInstance();
 	void setupPhysicalDevice();
+	void createLogicalDevice();
 
 	QueueFamilyIndices findQueueFamilies( VkPhysicalDevice _device );
 
@@ -42,4 +43,5 @@ private:
 	VkInstance m_Instance;
 	VkDebugUtilsMessengerEXT m_DebugMessenger;
 	VkPhysicalDevice m_PhysicalDevice;
+	VkDevice m_LogicalDevice;
 };
