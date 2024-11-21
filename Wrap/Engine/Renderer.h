@@ -12,23 +12,23 @@ constexpr std::array<const char*, 1 > validation_layers = {
 };
 
 struct QueueFamilyIndices {
-	std::optional<u32> m_graphics;
+	std::optional<u32> m_Graphics;
+	std::optional<u32> m_Present;
 
-	bool verifyGraphics() { return m_graphics.has_value(); }
+	bool verifyGraphics() { return m_Graphics.has_value() && m_Present.has_value(); }
 }; 
-
-
 
 class Renderer
 {
 public:
-	Renderer();
+	Renderer( GLFWwindow* _pWIndow );
 	~Renderer();
 
 	bool checkValidationSupport();
 
 private:
 	void createInstance();
+	void createSurface( GLFWwindow* _pWIndow );
 	void setupPhysicalDevice();
 	void createLogicalDevice();
 
@@ -44,4 +44,6 @@ private:
 	VkDebugUtilsMessengerEXT m_DebugMessenger;
 	VkPhysicalDevice m_PhysicalDevice;
 	VkDevice m_LogicalDevice;
+	VkQueue m_GraphicsQueue;
+	VkSurfaceKHR m_Surface;
 };

@@ -7,9 +7,10 @@ const bool enableValidationLayers = true;
 #endif
 
 //----------------------------------------------------------------------------------
-Renderer::Renderer()
+Renderer::Renderer( GLFWwindow* _pWIndow )
 {
 	createInstance();
+	createSurface( _pWIndow );
 	setupPhysicalDevice();
 	createLogicalDevice();
 }
@@ -17,10 +18,13 @@ Renderer::Renderer()
 //----------------------------------------------------------------------------------
 Renderer::~Renderer()
 {
+	vkDestroyDevice( m_LogicalDevice, nullptr );
+
 	if ( enableValidationLayers )
 		destroyDebugUtilsMessenger( m_Instance, m_DebugMessenger, nullptr );
-		
+
 	m_PhysicalDevice = VK_NULL_HANDLE;
+	vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
 	vkDestroyInstance( m_Instance, nullptr );
 }
 
@@ -50,24 +54,30 @@ void Renderer::createInstance()
 		.flags = 0,
 		.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
 		.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
-		.pfnUserCallback = ( PFN_vkDebugUtilsMessengerCallbackEXT )&VulkanDebug::debugCallback,
+		.pfnUserCallback = (PFN_vkDebugUtilsMessengerCallbackEXT)&VulkanDebug::debugCallback,
 		.pUserData = nullptr,
 	};
 
 	const VkInstanceCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-		.pNext = enableValidationLayers ? ( VkDebugUtilsMessengerCreateInfoEXT* )&debugCreateInfo : nullptr,
+		.pNext = enableValidationLayers ? (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo : nullptr,
 		.flags = 0,
 		.pApplicationInfo = &appInfo,
 		.enabledLayerCount = enableValidationLayers ? static_cast<u32>( validation_layers.size() ) : 0,
 		.ppEnabledLayerNames = enableValidationLayers ? validation_layers.data() : nullptr,
-		.enabledExtensionCount = enableValidationLayers ? static_cast< u32 >( glfwExtensions.size() ) : 0,
+		.enabledExtensionCount = enableValidationLayers ? static_cast<u32>( glfwExtensions.size() ) : 0,
 		.ppEnabledExtensionNames = enableValidationLayers ? glfwExtensions.data() : nullptr
 	};
 
 	VK_ASSERT( vkCreateInstance( &createInfo, nullptr, &m_Instance ) );
 	if ( enableValidationLayers )
 		VK_ASSERT( createDebugUtilsMessenger( m_Instance, &debugCreateInfo, nullptr, &m_DebugMessenger ) );
+}
+
+//----------------------------------------------------------------------------------
+void Renderer::createSurface( GLFWwindow* _pWIndow )
+{
+	VK_ASSERT( glfwCreateWindowSurface( m_Instance, _pWIndow, nullptr, &m_Surface ) );
 }
 
 //----------------------------------------------------------------------------------
@@ -80,7 +90,7 @@ void Renderer::setupPhysicalDevice()
 
 	u32 baseScore = 0;
 
-	auto rateDevice = []( VkPhysicalDeviceProperties props, VkPhysicalDeviceFeatures features ){
+	auto rateDevice = []( VkPhysicalDeviceProperties props, VkPhysicalDeviceFeatures features ) {
 		u32 score = 0;
 		switch ( props.deviceType )
 		{
@@ -99,7 +109,7 @@ void Renderer::setupPhysicalDevice()
 			score += 100;
 
 		return score;
-	};
+		};
 
 
 	for ( const auto& device : devices )
@@ -121,7 +131,7 @@ void Renderer::setupPhysicalDevice()
 	auto isDeviceSuitable = [this]( VkPhysicalDevice _device ) {
 		QueueFamilyIndices indices = findQueueFamilies( _device );
 		return indices.verifyGraphics();
-	};
+		};
 
 	assert( m_PhysicalDevice != VK_NULL_HANDLE && isDeviceSuitable( m_PhysicalDevice ) );
 }
@@ -136,12 +146,28 @@ void Renderer::createLogicalDevice()
 		.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
-		.queueFamilyIndex = indices.m_graphics.value(),
+		.queueFamilyIndex = indices.m_Graphics.value(),
 		.queueCount = 1,
 		.pQueuePriorities = &queuePrio
 	};
+
+	// Massive Struct -> GO back to it and pick features after more readings
 	VkPhysicalDeviceFeatures features{};
 
+	VkDeviceCreateInfo createInfo = {
+		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.queueCreateInfoCount = 1,
+		.pQueueCreateInfos = &queueCreateInfo,
+		.enabledLayerCount = enableValidationLayers ? static_cast<u32>( validation_layers.size() ) : 0,
+		.ppEnabledLayerNames = enableValidationLayers ? validation_layers.data() : nullptr,
+		.pEnabledFeatures = &features
+	};
+
+	VK_ASSERT( vkCreateDevice( m_PhysicalDevice, &createInfo, nullptr, &m_LogicalDevice ) );
+
+	vkGetDeviceQueue( m_LogicalDevice, indices.m_Graphics.value(), 0, &m_GraphicsQueue );
 }
 
 //----------------------------------------------------------------------------------
@@ -150,14 +176,14 @@ QueueFamilyIndices Renderer::findQueueFamilies( VkPhysicalDevice _device )
 	QueueFamilyIndices indices;
 
 	u32 queueCount;
-	vkGetPhysicalDeviceQueueFamilyProperties( m_PhysicalDevice, &queueCount, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties( m_PhysicalDevice, &queueCount, nullptr );
 	std::vector<VkQueueFamilyProperties> queueFamilies( queueCount );
 	vkGetPhysicalDeviceQueueFamilyProperties( m_PhysicalDevice, &queueCount, queueFamilies.data() );
 
 	for ( const auto& queueFamily : queueFamilies )
 	{
 		if ( queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT )
-			indices.m_graphics = 1;
+			indices.m_Graphics = 1;
 	}
 
 	return indices;
