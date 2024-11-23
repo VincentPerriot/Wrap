@@ -13,6 +13,10 @@ namespace Engine {
 		"VK_LAYER_KHRONOS_validation"
 	};
 
+	constexpr std::array<const char*, 1 > device_extensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
 	struct QueueFamilyIndices {
 		std::optional<u32> m_Graphics;
 		std::optional<u32> m_Present;
@@ -26,6 +30,12 @@ namespace Engine {
 		Renderer();
 		~Renderer();
 
+		Renderer( const Renderer& _other ) = delete;
+		Renderer& operator=( const Renderer& ) = delete;
+
+		Renderer( Renderer&& _other ) = delete;
+		Renderer& operator=( Renderer&& ) = delete;
+
 		bool checkValidationSupport();
 
 		// Temporary only running on GLFW
@@ -37,13 +47,14 @@ namespace Engine {
 		void createLogicalDevice();
 		void createSurface( GLFWwindow* _pWindow);
 
-		QueueFamilyIndices findQueueFamilies( VkPhysicalDevice _device );
+		QueueFamilyIndices findQueueFamilies();
 
 		VkResult createDebugUtilsMessenger( VkInstance _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
 			const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT* _messenger );
 		void destroyDebugUtilsMessenger( VkInstance _instance, VkDebugUtilsMessengerEXT _messenger, const VkAllocationCallbacks* _cbAlloc );
 
 		std::vector<const char*> getRequiredExtensions();
+		bool checkDeviceExtensionsSupport();
 
 		VkInstance m_Instance;
 		VkDebugUtilsMessengerEXT m_DebugMessenger;

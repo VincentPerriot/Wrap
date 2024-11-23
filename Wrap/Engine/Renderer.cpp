@@ -128,18 +128,22 @@ namespace Engine {
 			}
 		}
 
-		auto isDeviceSuitable = [this]( VkPhysicalDevice _device ) {
-			QueueFamilyIndices indices = findQueueFamilies( _device );
-			return indices.verifyGraphics();
+		assert( m_PhysicalDevice != VK_NULL_HANDLE );
+
+		auto isDeviceSuitable = [this]() {
+			QueueFamilyIndices indices = findQueueFamilies();
+			bool extensionSupport = checkDeviceExtensionsSupport();
+
+			return indices.verifyGraphics() && extensionSupport;
 			};
 
-		assert( m_PhysicalDevice != VK_NULL_HANDLE && isDeviceSuitable( m_PhysicalDevice ) );
+		assert( isDeviceSuitable() );
 	}
 
 	//----------------------------------------------------------------------------------
 	void Renderer::createLogicalDevice()
 	{
-		QueueFamilyIndices indices = findQueueFamilies( m_PhysicalDevice );
+		QueueFamilyIndices indices = findQueueFamilies();
 		std::set<u32> unique_queues = { indices.m_Graphics.value(), indices.m_Present.value() };
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos( unique_queues.size() );
@@ -168,6 +172,8 @@ namespace Engine {
 			.pQueueCreateInfos = queueCreateInfos.data(),
 			.enabledLayerCount = enableValidationLayers ? static_cast<u32>( validation_layers.size() ) : 0,
 			.ppEnabledLayerNames = enableValidationLayers ? validation_layers.data() : nullptr,
+			.enabledExtensionCount = static_cast<u32>( device_extensions.size() ),
+			.ppEnabledExtensionNames = device_extensions.data(),
 			.pEnabledFeatures = &features
 		};
 
@@ -178,7 +184,7 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
-	QueueFamilyIndices Renderer::findQueueFamilies( VkPhysicalDevice _device )
+	QueueFamilyIndices Renderer::findQueueFamilies()
 	{
 		QueueFamilyIndices indices;
 
@@ -227,6 +233,26 @@ namespace Engine {
 		}
 
 		return extensions;
+	}
+
+	//----------------------------------------------------------------------------------
+	bool Renderer::checkDeviceExtensionsSupport()
+	{
+		u32 extensionCount;
+		vkEnumerateDeviceExtensionProperties( m_PhysicalDevice, nullptr, &extensionCount, nullptr );
+
+		std::vector<VkExtensionProperties> availableExt( extensionCount );
+		vkEnumerateDeviceExtensionProperties( m_PhysicalDevice, nullptr, &extensionCount, availableExt.data() );
+
+		for ( const auto& ext : device_extensions )
+		{
+			auto it = std::ranges::find_if( availableExt, [&ext]( VkExtensionProperties availableProp ) {
+				return strcmp( ext, availableProp.extensionName ) == 0;
+				} );
+			if ( it == availableExt.end() ) return false;
+		}
+
+		return true;
 	}
 
 	//----------------------------------------------------------------------------------

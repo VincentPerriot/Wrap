@@ -9,7 +9,7 @@
 	do {																                               \
 		VkResult err = x;												                               \
 		if ( err ) {													                               \
-			std::cout << "Detected Vulkan error: " << VulkanDebug::to_string( err ) << std::endl;	   \
+			std::cerr << "Detected Vulkan error: " << VulkanDebug::to_string( err ) << std::endl;	   \
 			abort();    												                               \
 		}              													                               \
 	} while ( 0 )														                               \
