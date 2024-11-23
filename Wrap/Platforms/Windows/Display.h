@@ -16,6 +16,8 @@ public:
 	bool shouldClose() const;
 	void pollEvents();
 
+	GLFWwindow* getWindowPtr() { return m_pWindow; };
+
 private:
 	const std::string m_Title{};
 

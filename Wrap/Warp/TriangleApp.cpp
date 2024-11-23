@@ -2,8 +2,7 @@
 
 //--------------------------------------------------------------------
 TriangleApp::TriangleApp()
-	: m_pRenderer( std::make_unique<Renderer>() )
-	, m_pDisplay( std::make_unique<Display>( 800, 600, "Vulkan" ) )
+	: m_pDisplay( std::make_unique<Display>( 800, 600, "Vulkan" ) )
 {
 }
 
@@ -23,8 +22,8 @@ void TriangleApp::run()
 //--------------------------------------------------------------------
 void TriangleApp::initVulkan()
 {
-	assert( m_pDisplay != nullptr );
-	assert( m_pRenderer != nullptr );
+	m_pRenderer = std::make_unique<Engine::Renderer>();
+	m_pRenderer->init( m_pDisplay->getWindowPtr() );
 }
 
 //--------------------------------------------------------------------

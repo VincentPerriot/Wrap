@@ -21,6 +21,6 @@ private:
 	void mainLoop();
 
 	std::unique_ptr<Display> m_pDisplay;
-	std::unique_ptr<Renderer> m_pRenderer;
+	std::unique_ptr<Engine::Renderer> m_pRenderer;
 };
 

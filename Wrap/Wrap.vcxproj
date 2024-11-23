@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Renderer.cpp" />
+    <ClCompile Include="Engine\SwapChain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Platforms\Windows\Display.cpp" />
     <ClCompile Include="Warp\TriangleApp.cpp" />
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="Engine\Debug.h" />
     <ClInclude Include="Engine\Renderer.h" />
+    <ClInclude Include="Engine\SwapChain.h" />
     <ClInclude Include="Warp\TriangleApp.h" />
     <ClInclude Include="Utils\Common.h" />
     <ClInclude Include="Platforms\Windows\Display.h" />
