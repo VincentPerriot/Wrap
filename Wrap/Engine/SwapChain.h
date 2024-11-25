@@ -14,7 +14,7 @@ namespace Engine {
 
 	class SwapChain {
 	public:
-		SwapChain( VkDevice& _device, VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface );
+		SwapChain( VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface );
 
 		~SwapChain();
 
@@ -24,10 +24,20 @@ namespace Engine {
 		SwapChain( SwapChain&& _other ) = delete;
 		SwapChain& operator=( SwapChain&& ) = delete;
 
+		SwapChainSupportDetails getSupportDetails() { return m_SupportDetails; }
+
+		bool isAdequate();
+
 	private:
-		VkDevice m_Device;
-		VkSurfaceKHR m_Surface;
-		VkPhysicalDevice m_PhysicalDevice;
+
+		void querySwapChainDetails( VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface );
+
+		VkSurfaceFormatKHR chooseSwapSurfaceFormat();
+		VkPresentModeKHR choosePresentMode();
+		VkExtent2D chooseSwapExtent();
+		void createSwapChain();
+
+		SwapChainSupportDetails m_SupportDetails;
 	};
 
 } // End namespace Engine

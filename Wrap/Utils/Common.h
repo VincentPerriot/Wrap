@@ -9,6 +9,7 @@
 #include <memory>
 #include <cstdint>
 #include <cassert>
+#include <functional>
 
 using u32 = std::uint32_t;
 using u64 = std::uint64_t;

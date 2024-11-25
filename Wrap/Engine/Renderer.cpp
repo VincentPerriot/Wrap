@@ -130,11 +130,13 @@ namespace Engine {
 
 		assert( m_PhysicalDevice != VK_NULL_HANDLE );
 
+		m_Swapchain = std::make_unique<Engine::SwapChain>( m_PhysicalDevice, m_Surface );
+
 		auto isDeviceSuitable = [this]() {
 			QueueFamilyIndices indices = findQueueFamilies();
 			bool extensionSupport = checkDeviceExtensionsSupport();
 
-			return indices.verifyGraphics() && extensionSupport;
+			return indices.verifyGraphics() && extensionSupport && m_Swapchain->isAdequate();
 			};
 
 		assert( isDeviceSuitable() );

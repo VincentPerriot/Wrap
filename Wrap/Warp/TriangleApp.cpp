@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------------
 TriangleApp::TriangleApp()
-	: m_pDisplay( std::make_unique<Display>( 800, 600, "Vulkan" ) )
+	: m_pDisplay( std::make_unique<Display>( 1920, 1080, "Vulkan" ) )
 {
 }
 

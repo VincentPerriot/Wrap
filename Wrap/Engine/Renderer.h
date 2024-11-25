@@ -4,6 +4,7 @@
 #include "../Utils/Common.h"
 
 #include "vulkan/vulkan.h"
+#include "SwapChain.h"
 #include "GLFW/glfw3.h"
 #include "Debug.h"
 
@@ -55,6 +56,8 @@ namespace Engine {
 
 		std::vector<const char*> getRequiredExtensions();
 		bool checkDeviceExtensionsSupport();
+
+		std::unique_ptr<Engine::SwapChain> m_Swapchain;
 
 		VkInstance m_Instance;
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
