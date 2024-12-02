@@ -1,9 +1,12 @@
 #include "TriangleApp.h"
 
+constexpr u32 WINDOW_WIDTH = 1920;
+constexpr u32 WINDOW_HEIGHT = 1080;
+
 //--------------------------------------------------------------------
 TriangleApp::TriangleApp()
-	: m_pDisplay( std::make_unique<Display>( 1920, 1080, "Vulkan" ) )
 {
+	Display::Instance( WINDOW_WIDTH, WINDOW_HEIGHT, "Vulkan" );
 }
 
 TriangleApp::~TriangleApp()
@@ -23,14 +26,14 @@ void TriangleApp::run()
 void TriangleApp::initVulkan()
 {
 	m_pRenderer = std::make_unique<Engine::Renderer>();
-	m_pRenderer->init( m_pDisplay->getWindowPtr() );
+	m_pRenderer->init( Display::Instance().getWindowPtr() );
 }
 
 //--------------------------------------------------------------------
 void TriangleApp::mainLoop()
 {
-	while ( !m_pDisplay->shouldClose() )
+	while ( !Display::Instance().shouldClose() )
 	{
-		m_pDisplay->pollEvents();
+		Display::Instance().pollEvents();
 	}
 }

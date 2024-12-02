@@ -1,4 +1,5 @@
 #include "SwapChain.h"
+#include "../Platforms/Windows/Display.h"
 
 //------------------------------------------------------------------------------------
 Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface )
@@ -65,9 +66,15 @@ VkExtent2D Engine::SwapChain::chooseSwapExtent()
 	if ( m_SupportDetails.m_Capabilities.currentExtent.width == std::numeric_limits<u32>::max() )
 		return m_SupportDetails.m_Capabilities.currentExtent;
 	else {
-		// Requires Window information here (see how to pass it, SwapChain should not store window info)
-	}
+		int width, height;
+		glfwGetFramebufferSize( Display::Instance().getWindowPtr(), &width, &height);
 
+		VkExtent2D extent = { (u32)width, (u32)height };
+		extent.width = std::clamp( extent.width, m_SupportDetails.m_Capabilities.minImageExtent.width, m_SupportDetails.m_Capabilities.maxImageExtent.width );
+		extent.height = std::clamp( extent.height, m_SupportDetails.m_Capabilities.minImageExtent.height, m_SupportDetails.m_Capabilities.maxImageExtent.height );
+
+		return extent;
+	}
 }
 
 //------------------------------------------------------------------------------------

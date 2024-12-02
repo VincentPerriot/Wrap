@@ -3,6 +3,9 @@
 //--------------------------------------------------------------------------------
 //------------ Basic GLFW Display To connect to apps -----------------------------
 //--------------------------------------------------------------------------------
+
+Display* Display::m_SingletonDisplay = nullptr;
+
 Display::Display( u32 _width, u32 _height, const std::string& _title )
 	: m_Title( _title )
 	, m_Width( _width )
@@ -16,6 +19,23 @@ Display::~Display()
 {
 	glfwDestroyWindow( m_pWindow );
 	glfwTerminate();
+}
+
+//--------------------------------------------------------------------------------
+Display& Display::Instance( u32 _width, u32 _height, const std::string& _title )
+{
+	if ( m_SingletonDisplay == nullptr )
+	{
+		m_SingletonDisplay = new Display( _width, _height, _title );
+	}
+	return *m_SingletonDisplay;
+}
+
+//--------------------------------------------------------------------------------
+Display& Display::Instance()
+{
+	assert( m_SingletonDisplay );
+	return *m_SingletonDisplay;
 }
 
 //--------------------------------------------------------------------------------
@@ -41,6 +61,12 @@ void Display::createWindow()
 		}
 	);
 
+	glfwWindowHint( GLFW_RESIZABLE, GLFW_TRUE );
+
+	// TODO HANDLE RESSSSSSSIIIIIIZZZZEEE
+	//glfwSetFramebufferSizeCallback( m_pWindow, framebufferResizeCallback ){
+
+	//} );
 }
 
 // Could leave these 2 as direct calls in the App class ( see later what is more convenient )
@@ -55,3 +81,4 @@ void Display::pollEvents()
 {
 	glfwPollEvents();
 }
+
