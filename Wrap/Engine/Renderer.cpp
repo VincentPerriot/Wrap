@@ -15,12 +15,14 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	Renderer::~Renderer()
 	{
+		m_Swapchain.reset();
 		vkDestroyDevice( m_LogicalDevice, nullptr );
 
 		if ( enableValidationLayers )
 			destroyDebugUtilsMessenger( m_Instance, m_DebugMessenger, nullptr );
 
 		m_PhysicalDevice = VK_NULL_HANDLE;
+
 		vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
 		vkDestroyInstance( m_Instance, nullptr );
 	}
@@ -32,6 +34,9 @@ namespace Engine {
 		createSurface( _pWindow );
 		setupPhysicalDevice();
 		createLogicalDevice();
+
+		m_Swapchain = std::make_unique<Engine::SwapChain>( m_PhysicalDevice, m_LogicalDevice, m_Surface );
+		assert( isDeviceSuitable() );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -129,17 +134,6 @@ namespace Engine {
 		}
 
 		assert( m_PhysicalDevice != VK_NULL_HANDLE );
-
-		m_Swapchain = std::make_unique<Engine::SwapChain>( m_PhysicalDevice, m_Surface );
-
-		auto isDeviceSuitable = [this]() {
-			QueueFamilyIndices indices = findQueueFamilies();
-			bool extensionSupport = checkDeviceExtensionsSupport();
-
-			return indices.verifyGraphics() && extensionSupport && m_Swapchain->isAdequate();
-			};
-
-		assert( isDeviceSuitable() );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -182,7 +176,7 @@ namespace Engine {
 		VK_ASSERT( vkCreateDevice( m_PhysicalDevice, &createInfo, nullptr, &m_LogicalDevice ) );
 
 		vkGetDeviceQueue( m_LogicalDevice, indices.m_Graphics.value(), 0, &m_GraphicsQueue );
-		vkGetDeviceQueue( m_LogicalDevice, indices.m_Present.value(), 0, &m_GraphicsQueue );
+		vkGetDeviceQueue( m_LogicalDevice, indices.m_Present.value(), 0, &m_PresentQueue );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -208,12 +202,15 @@ namespace Engine {
 			if ( queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT )
 				indices.m_Graphics = idx;
 
-			// According to Vulkan Doc ->  explicitly prefer a physical device that supports drawing and presentation in the same queue
+			// According to Vulkan Doc -> explicitly prefer a physical device that supports drawing and presentation in the same queue 
+			// Here we make it a requirement and create our swapchain with VK_SHARING_MODE_EXCLUSIVE
 			if ( indices.verifyGraphics() && indices.m_Present == indices.m_Graphics )
 				break;
 
 			idx++;
 		}
+
+		assert( indices.verifyGraphics() && indices.m_Present == indices.m_Graphics );
 
 		return indices;
 	}
@@ -255,6 +252,15 @@ namespace Engine {
 		}
 
 		return true;
+	}
+
+	//----------------------------------------------------------------------------------
+	bool Renderer::isDeviceSuitable()
+	{
+		QueueFamilyIndices indices = findQueueFamilies();
+		bool extensionSupport = checkDeviceExtensionsSupport();
+
+		return indices.verifyGraphics() && extensionSupport && m_Swapchain->isAdequate();
 	}
 
 	//----------------------------------------------------------------------------------

@@ -6,6 +6,11 @@
 #include "../Platforms/Windows/Display.h"
 #include "../Engine/Renderer.h"
 
+namespace Config {
+	inline u32 WINDOW_WIDTH = 1920;
+	inline u32 WINDOW_HEIGHT = 1080;
+}
+
 class TriangleApp
 {
 public:

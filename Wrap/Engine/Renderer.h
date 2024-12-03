@@ -56,6 +56,7 @@ namespace Engine {
 
 		std::vector<const char*> getRequiredExtensions();
 		bool checkDeviceExtensionsSupport();
+		bool isDeviceSuitable();
 
 		std::unique_ptr<Engine::SwapChain> m_Swapchain;
 

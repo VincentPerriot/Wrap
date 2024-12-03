@@ -1,12 +1,9 @@
 #include "TriangleApp.h"
 
-constexpr u32 WINDOW_WIDTH = 1920;
-constexpr u32 WINDOW_HEIGHT = 1080;
-
 //--------------------------------------------------------------------
 TriangleApp::TriangleApp()
 {
-	Display::Instance( WINDOW_WIDTH, WINDOW_HEIGHT, "Vulkan" );
+	Display::Instance( Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, "Vulkan" );
 }
 
 TriangleApp::~TriangleApp()

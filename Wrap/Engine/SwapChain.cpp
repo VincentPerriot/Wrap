@@ -2,17 +2,18 @@
 #include "../Platforms/Windows/Display.h"
 
 //------------------------------------------------------------------------------------
-Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface )
+Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _device, VkSurfaceKHR& _surface )
+	: m_Device( _device )
 {
-	querySwapChainDetails( _physicalDevice, _surface);
-	createSwapChain();
+	querySwapChainDetails( _physicalDevice, _surface );
+	createSwapChain( _surface );
 }
 
 
 //------------------------------------------------------------------------------------
 Engine::SwapChain::~SwapChain()
 {
-
+	vkDestroySwapchainKHR( m_Device, m_VkSwapChain, nullptr );
 }
 
 //------------------------------------------------------------------------------------
@@ -67,7 +68,7 @@ VkExtent2D Engine::SwapChain::chooseSwapExtent()
 		return m_SupportDetails.m_Capabilities.currentExtent;
 	else {
 		int width, height;
-		glfwGetFramebufferSize( Display::Instance().getWindowPtr(), &width, &height);
+		glfwGetFramebufferSize( Display::Instance().getWindowPtr(), &width, &height );
 
 		VkExtent2D extent = { (u32)width, (u32)height };
 		extent.width = std::clamp( extent.width, m_SupportDetails.m_Capabilities.minImageExtent.width, m_SupportDetails.m_Capabilities.maxImageExtent.width );
@@ -78,10 +79,39 @@ VkExtent2D Engine::SwapChain::chooseSwapExtent()
 }
 
 //------------------------------------------------------------------------------------
-void Engine::SwapChain::createSwapChain()
+void Engine::SwapChain::createSwapChain( VkSurfaceKHR& _surface )
 {
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat();
 	VkPresentModeKHR presentMode = choosePresentMode();
 	VkExtent2D swapExtent = chooseSwapExtent();
+
+	// Mailbox Requires Triple buffering
+	u32 imageCount = presentMode == VK_PRESENT_MODE_MAILBOX_KHR ? 3 : m_SupportDetails.m_Capabilities.minImageCount + 1;
+
+	if ( m_SupportDetails.m_Capabilities.maxImageCount > 0 && imageCount > m_SupportDetails.m_Capabilities.maxImageCount )
+	{
+		imageCount = m_SupportDetails.m_Capabilities.maxImageCount;
+	}
+
+	VkSwapchainCreateInfoKHR createInfo = {
+		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+		.pNext = nullptr,
+		.flags = 0,
+		.surface = _surface,
+		.minImageCount = imageCount,
+		.imageFormat = surfaceFormat.format,
+		.imageColorSpace = surfaceFormat.colorSpace,
+		.imageExtent = swapExtent,
+		.imageArrayLayers = 1,
+		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+		.preTransform = m_SupportDetails.m_Capabilities.currentTransform,
+		.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+		.presentMode = presentMode,
+		.clipped = VK_TRUE,
+		.oldSwapchain = VK_NULL_HANDLE
+	};
+
+	VK_ASSERT( vkCreateSwapchainKHR( m_Device, &createInfo, nullptr, &m_VkSwapChain ) );
 }
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../Utils/Common.h"
+#include "../../Warp/TriangleApp.h"
+#include "../../Engine/SwapChain.h"
 
 #include <GLFW/glfw3.h>
 
@@ -30,5 +32,5 @@ private:
 	u32 m_Height = 0;
 
 	GLFWwindow* m_pWindow;
-	static Display* m_SingletonDisplay;
+	inline static Display* m_SingletonDisplay = nullptr;
 };
