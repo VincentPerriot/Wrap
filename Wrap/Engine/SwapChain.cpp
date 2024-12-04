@@ -14,6 +14,10 @@ Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _devi
 Engine::SwapChain::~SwapChain()
 {
 	vkDestroySwapchainKHR( m_Device, m_VkSwapChain, nullptr );
+	for ( auto& imageview : m_ImageViews )
+	{
+		vkDestroyImageView( m_Device, imageview, nullptr );
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -81,12 +85,12 @@ VkExtent2D Engine::SwapChain::chooseSwapExtent()
 //------------------------------------------------------------------------------------
 void Engine::SwapChain::createSwapChain( VkSurfaceKHR& _surface )
 {
-	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat();
-	VkPresentModeKHR presentMode = choosePresentMode();
+	m_SelectedFormat = chooseSwapSurfaceFormat();
+	m_SelectedPresentMode = choosePresentMode();
 	VkExtent2D swapExtent = chooseSwapExtent();
 
 	// Mailbox Requires Triple buffering
-	u32 imageCount = presentMode == VK_PRESENT_MODE_MAILBOX_KHR ? 3 : m_SupportDetails.m_Capabilities.minImageCount + 1;
+	u32 imageCount = m_SelectedPresentMode == VK_PRESENT_MODE_MAILBOX_KHR ? 3 : m_SupportDetails.m_Capabilities.minImageCount + 1;
 
 	if ( m_SupportDetails.m_Capabilities.maxImageCount > 0 && imageCount > m_SupportDetails.m_Capabilities.maxImageCount )
 	{
@@ -99,19 +103,61 @@ void Engine::SwapChain::createSwapChain( VkSurfaceKHR& _surface )
 		.flags = 0,
 		.surface = _surface,
 		.minImageCount = imageCount,
-		.imageFormat = surfaceFormat.format,
-		.imageColorSpace = surfaceFormat.colorSpace,
+		.imageFormat = m_SelectedFormat.format,
+		.imageColorSpace = m_SelectedFormat.colorSpace,
 		.imageExtent = swapExtent,
 		.imageArrayLayers = 1,
 		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.preTransform = m_SupportDetails.m_Capabilities.currentTransform,
 		.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-		.presentMode = presentMode,
+		.presentMode = m_SelectedPresentMode,
 		.clipped = VK_TRUE,
 		.oldSwapchain = VK_NULL_HANDLE
 	};
 
 	VK_ASSERT( vkCreateSwapchainKHR( m_Device, &createInfo, nullptr, &m_VkSwapChain ) );
+
+	vkGetSwapchainImagesKHR( m_Device, m_VkSwapChain, &imageCount, nullptr );
+	m_SwapChainImages.resize( imageCount );
+	vkGetSwapchainImagesKHR( m_Device, m_VkSwapChain, &imageCount, m_SwapChainImages.data() );
+
+}
+
+//------------------------------------------------------------------------------------
+void Engine::SwapChain::createImageViews()
+{
+	m_ImageViews.resize( m_SwapChainImages.size() );
+
+	for ( size_t i = 0; i < m_SwapChainImages.size(); i++ )
+	{
+		VkComponentMapping components{
+			.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+			.g = VK_COMPONENT_SWIZZLE_IDENTITY,
+			.b = VK_COMPONENT_SWIZZLE_IDENTITY,
+			.a = VK_COMPONENT_SWIZZLE_IDENTITY
+		};
+
+		VkImageSubresourceRange subResources{
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		};
+
+		VkImageViewCreateInfo createInfo = {
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.image = m_SwapChainImages[i],
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = m_SelectedFormat.format,
+			.components = components,
+			.subresourceRange = subResources
+		};
+
+		VK_ASSERT( vkCreateImageView( m_Device, &createInfo, nullptr, &m_ImageViews[i] ) );
+	}
 }
 

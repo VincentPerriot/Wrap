@@ -39,9 +39,16 @@ namespace Engine {
 		VkPresentModeKHR choosePresentMode();
 		VkExtent2D chooseSwapExtent();
 		void createSwapChain( VkSurfaceKHR& _surface );
+		void createImageViews();
 
 		SwapChainSupportDetails m_SupportDetails;
 		VkDevice& m_Device;
+
+		std::vector<VkImage> m_SwapChainImages;
+		std::vector<VkImageView> m_ImageViews;
+
+		VkSurfaceFormatKHR m_SelectedFormat;
+		VkPresentModeKHR m_SelectedPresentMode;
 	};
 
 } // End namespace Engine
