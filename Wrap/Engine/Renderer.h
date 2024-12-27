@@ -39,6 +39,8 @@ namespace Engine {
 
 		bool checkValidationSupport();
 
+		void drawFrames();
+
 		// Temporary only running on GLFW
 		void init( GLFWwindow* _pWindow );
 
@@ -47,6 +49,8 @@ namespace Engine {
 		void setupPhysicalDevice();
 		void createLogicalDevice();
 		void createSurface( GLFWwindow* _pWindow);
+		void createGraphicsPipeline();
+		void createRenderPass();
 
 		QueueFamilyIndices findQueueFamilies();
 

@@ -32,5 +32,6 @@ void TriangleApp::mainLoop()
 	while ( !Display::Instance().shouldClose() )
 	{
 		Display::Instance().pollEvents();
+		m_pRenderer->drawFrames();
 	}
 }

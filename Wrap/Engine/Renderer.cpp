@@ -180,6 +180,25 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
+	void Renderer::createSurface( GLFWwindow* _pWindow )
+	{
+		assert( _pWindow );
+		VK_ASSERT( glfwCreateWindowSurface( m_Instance, _pWindow, nullptr, &m_Surface ) );
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::createGraphicsPipeline()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::createRenderPass()
+	{
+
+	}
+
+	//----------------------------------------------------------------------------------
 	QueueFamilyIndices Renderer::findQueueFamilies()
 	{
 		QueueFamilyIndices indices;
@@ -283,6 +302,16 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
+	void Renderer::drawFrames()
+	{
+		if ( m_Swapchain->m_BufferResized )
+		{
+			m_Swapchain->m_BufferResized = false;
+			m_Swapchain->recreateSwapChain();
+		}
+	}
+
+	//----------------------------------------------------------------------------------
 	VkResult Renderer::createDebugUtilsMessenger( VkInstance _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
 		const VkAllocationCallbacks* _cbAlloc, VkDebugUtilsMessengerEXT* _messenger )
 	{
@@ -303,10 +332,4 @@ namespace Engine {
 			fn( _instance, _messenger, _cbAlloc );
 	}
 
-	//----------------------------------------------------------------------------------
-	void Renderer::createSurface( GLFWwindow* _pWindow )
-	{
-		assert( _pWindow );
-		VK_ASSERT( glfwCreateWindowSurface( m_Instance, _pWindow, nullptr, &m_Surface ) );
-	}
 } // Namespace Engine

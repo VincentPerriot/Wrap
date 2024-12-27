@@ -28,27 +28,33 @@ namespace Engine {
 
 		SwapChainSupportDetails getSupportDetails() { return m_SupportDetails; }
 		bool isAdequate();
+		void recreateSwapChain();
 
 		// Use this to recreate swapChain
 		inline static bool m_BufferResized;
 
 	private:
-		void querySwapChainDetails( VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface );
+		void querySwapChainDetails();
 
 		VkSurfaceFormatKHR chooseSwapSurfaceFormat();
 		VkPresentModeKHR choosePresentMode();
 		VkExtent2D chooseSwapExtent();
-		void createSwapChain( VkSurfaceKHR& _surface );
+		void createSwapChain();
 		void createImageViews();
+
+		void cleanUpSwapChain();
 
 		SwapChainSupportDetails m_SupportDetails;
 		VkDevice& m_Device;
+		VkPhysicalDevice& m_PhysicalDevice;
 
 		std::vector<VkImage> m_SwapChainImages;
 		std::vector<VkImageView> m_ImageViews;
 
 		VkSurfaceFormatKHR m_SelectedFormat;
 		VkPresentModeKHR m_SelectedPresentMode;
+
+		VkSurfaceKHR& m_Surface;
 	};
 
 } // End namespace Engine

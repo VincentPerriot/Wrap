@@ -65,7 +65,6 @@ void Display::createWindow()
 	} );
 }
 
-// Could leave these 2 as direct calls in the App class ( see later what is more convenient )
 //--------------------------------------------------------------------------------
 bool Display::shouldClose() const
 {

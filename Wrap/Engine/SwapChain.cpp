@@ -4,20 +4,18 @@
 //------------------------------------------------------------------------------------
 Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _device, VkSurfaceKHR& _surface )
 	: m_Device( _device )
+	, m_Surface( _surface )
+	, m_PhysicalDevice( _physicalDevice )
 {
-	querySwapChainDetails( _physicalDevice, _surface );
-	createSwapChain( _surface );
+	querySwapChainDetails();
+	createSwapChain();
 }
 
 
 //------------------------------------------------------------------------------------
 Engine::SwapChain::~SwapChain()
 {
-	vkDestroySwapchainKHR( m_Device, m_VkSwapChain, nullptr );
-	for ( auto& imageview : m_ImageViews )
-	{
-		vkDestroyImageView( m_Device, imageview, nullptr );
-	}
+	cleanUpSwapChain();
 }
 
 //------------------------------------------------------------------------------------
@@ -27,19 +25,19 @@ bool Engine::SwapChain::isAdequate()
 }
 
 //------------------------------------------------------------------------------------
-void Engine::SwapChain::querySwapChainDetails( VkPhysicalDevice& _physicalDevice, VkSurfaceKHR& _surface )
+void Engine::SwapChain::querySwapChainDetails()
 {
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR( _physicalDevice, _surface, &m_SupportDetails.m_Capabilities );
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR( m_PhysicalDevice, m_Surface, &m_SupportDetails.m_Capabilities );
 
 	u32 formatCount;
-	vkGetPhysicalDeviceSurfaceFormatsKHR( _physicalDevice, _surface, &formatCount, nullptr );
+	vkGetPhysicalDeviceSurfaceFormatsKHR( m_PhysicalDevice, m_Surface, &formatCount, nullptr );
 	m_SupportDetails.m_Formats.resize( formatCount );
-	vkGetPhysicalDeviceSurfaceFormatsKHR( _physicalDevice, _surface, &formatCount, m_SupportDetails.m_Formats.data() );
+	vkGetPhysicalDeviceSurfaceFormatsKHR( m_PhysicalDevice, m_Surface, &formatCount, m_SupportDetails.m_Formats.data() );
 
 	u32 presentCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR( _physicalDevice, _surface, &presentCount, nullptr );
+	vkGetPhysicalDeviceSurfacePresentModesKHR( m_PhysicalDevice, m_Surface, &presentCount, nullptr );
 	m_SupportDetails.m_PresentModes.resize( presentCount );
-	vkGetPhysicalDeviceSurfacePresentModesKHR( _physicalDevice, _surface, &presentCount, m_SupportDetails.m_PresentModes.data() );
+	vkGetPhysicalDeviceSurfacePresentModesKHR( m_PhysicalDevice, m_Surface, &presentCount, m_SupportDetails.m_PresentModes.data() );
 }
 
 //------------------------------------------------------------------------------------
@@ -71,10 +69,7 @@ VkExtent2D Engine::SwapChain::chooseSwapExtent()
 	if ( m_SupportDetails.m_Capabilities.currentExtent.width == std::numeric_limits<u32>::max() )
 		return m_SupportDetails.m_Capabilities.currentExtent;
 	else {
-		int width, height;
-		glfwGetFramebufferSize( Display::Instance().getWindowPtr(), &width, &height );
-
-		VkExtent2D extent = { (u32)width, (u32)height };
+		VkExtent2D extent = { Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT };
 		extent.width = std::clamp( extent.width, m_SupportDetails.m_Capabilities.minImageExtent.width, m_SupportDetails.m_Capabilities.maxImageExtent.width );
 		extent.height = std::clamp( extent.height, m_SupportDetails.m_Capabilities.minImageExtent.height, m_SupportDetails.m_Capabilities.maxImageExtent.height );
 
@@ -83,7 +78,7 @@ VkExtent2D Engine::SwapChain::chooseSwapExtent()
 }
 
 //------------------------------------------------------------------------------------
-void Engine::SwapChain::createSwapChain( VkSurfaceKHR& _surface )
+void Engine::SwapChain::createSwapChain()
 {
 	m_SelectedFormat = chooseSwapSurfaceFormat();
 	m_SelectedPresentMode = choosePresentMode();
@@ -101,7 +96,7 @@ void Engine::SwapChain::createSwapChain( VkSurfaceKHR& _surface )
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 		.pNext = nullptr,
 		.flags = 0,
-		.surface = _surface,
+		.surface = m_Surface,
 		.minImageCount = imageCount,
 		.imageFormat = m_SelectedFormat.format,
 		.imageColorSpace = m_SelectedFormat.colorSpace,
@@ -161,3 +156,25 @@ void Engine::SwapChain::createImageViews()
 	}
 }
 
+//------------------------------------------------------------------------------------
+void Engine::SwapChain::recreateSwapChain()
+{
+	vkDeviceWaitIdle( m_Device );
+
+	cleanUpSwapChain();
+
+	querySwapChainDetails();
+	createSwapChain();
+	createImageViews();
+}
+
+//------------------------------------------------------------------------------------
+void Engine::SwapChain::cleanUpSwapChain()
+{
+	for ( auto& imageview : m_ImageViews )
+	{
+		vkDestroyImageView( m_Device, imageview, nullptr );
+	}
+
+	vkDestroySwapchainKHR( m_Device, m_VkSwapChain, nullptr );
+}
