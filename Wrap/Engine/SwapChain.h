@@ -25,8 +25,11 @@ namespace Engine {
 		SwapChain& operator=( SwapChain&& ) = delete;
 
 		VkSwapchainKHR m_VkSwapChain;
+		SwapChainSupportDetails getSupportDetails();
+		u32 getExtentWidth();
+		u32 getExtentHeight();
+		VkSurfaceFormatKHR getImageFormat();
 
-		SwapChainSupportDetails getSupportDetails() { return m_SupportDetails; }
 		bool isAdequate();
 		void recreateSwapChain();
 
@@ -55,6 +58,7 @@ namespace Engine {
 		VkPresentModeKHR m_SelectedPresentMode;
 
 		VkSurfaceKHR& m_Surface;
+		VkExtent2D m_Extent;
 	};
 
 } // End namespace Engine

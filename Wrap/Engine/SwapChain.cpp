@@ -11,11 +11,35 @@ Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _devi
 	createSwapChain();
 }
 
-
 //------------------------------------------------------------------------------------
 Engine::SwapChain::~SwapChain()
 {
 	cleanUpSwapChain();
+}
+
+//------------------------------------------------------------------------------------
+Engine::SwapChainSupportDetails Engine::SwapChain::getSupportDetails()
+{
+	return m_SupportDetails;
+}
+
+
+//------------------------------------------------------------------------------------
+u32 Engine::SwapChain::getExtentWidth()
+{
+	return m_Extent.width;
+}
+
+//------------------------------------------------------------------------------------
+u32 Engine::SwapChain::getExtentHeight()
+{
+	return m_Extent.height;
+}
+
+//------------------------------------------------------------------------------------
+VkSurfaceFormatKHR Engine::SwapChain::getImageFormat()
+{
+	return m_SelectedFormat;
 }
 
 //------------------------------------------------------------------------------------
@@ -82,7 +106,7 @@ void Engine::SwapChain::createSwapChain()
 {
 	m_SelectedFormat = chooseSwapSurfaceFormat();
 	m_SelectedPresentMode = choosePresentMode();
-	VkExtent2D swapExtent = chooseSwapExtent();
+	m_Extent = chooseSwapExtent();
 
 	// Mailbox Requires Triple buffering
 	u32 imageCount = m_SelectedPresentMode == VK_PRESENT_MODE_MAILBOX_KHR ? 3 : m_SupportDetails.m_Capabilities.minImageCount + 1;
@@ -100,7 +124,7 @@ void Engine::SwapChain::createSwapChain()
 		.minImageCount = imageCount,
 		.imageFormat = m_SelectedFormat.format,
 		.imageColorSpace = m_SelectedFormat.colorSpace,
-		.imageExtent = swapExtent,
+		.imageExtent = m_Extent,
 		.imageArrayLayers = 1,
 		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,

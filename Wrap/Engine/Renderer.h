@@ -48,7 +48,8 @@ namespace Engine {
 		void createInstance();
 		void setupPhysicalDevice();
 		void createLogicalDevice();
-		void createSurface( GLFWwindow* _pWindow);
+		void createSurface( GLFWwindow* _pWindow );
+
 		void createGraphicsPipeline();
 		void createRenderPass();
 
@@ -72,5 +73,9 @@ namespace Engine {
 
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
+
+		VkPipeline m_GraphicsPipeline;
+		VkPipelineLayout m_PipelineLayout;
+		VkRenderPass m_RenderPass;
 	};
 } // End Namespace Engine
