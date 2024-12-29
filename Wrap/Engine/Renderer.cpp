@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "ShaderModule.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -189,6 +190,33 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	void Renderer::createGraphicsPipeline()
 	{
+		auto pVertShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "../Shaders/vert.spv" ) );
+		auto pFragShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "../Shaders/frag.spv" ) );
+
+		VkShaderModule vertModule = pVertShader->getShaderModule();
+		VkShaderModule fragModule = pFragShader->getShaderModule();
+
+		VkPipelineShaderStageCreateInfo vertCreateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stage = VK_SHADER_STAGE_VERTEX_BIT,
+			.module = vertModule,
+			.pName = "main",
+			.pSpecializationInfo = nullptr
+		};
+
+		VkPipelineShaderStageCreateInfo fragCreateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.module = fragModule,
+			.pName = "main",
+			.pSpecializationInfo = nullptr
+		};
+
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStageCreateInfos = { vertCreateInfo, fragCreateInfo };
 
 	}
 
