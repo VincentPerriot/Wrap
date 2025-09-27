@@ -1,8 +1,9 @@
 #include "Renderer.h"
 #include "ShaderModule.h"
+#include "RuntimeShaderCompiler.h"
 
 #ifdef NDEBUG
-const bool enableValidationLayers = false;
+const bool enableValidationLayers = true;
 #else
 const bool enableValidationLayers = true;
 #endif
@@ -58,11 +59,11 @@ namespace Engine {
 		const VkApplicationInfo appInfo = {
 			.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
 			.pNext = nullptr,
-			.pApplicationName = "test_triangle",
+			.pApplicationName = "warp_engine_app",
 			.applicationVersion = VK_MAKE_API_VERSION( 1, 0, 0, 0 ),
 			.pEngineName = "wrap_engine",
 			.engineVersion = VK_MAKE_API_VERSION( 1, 0, 0, 0 ),
-			.apiVersion = VK_API_VERSION_1_0
+			.apiVersion = VK_API_VERSION_1_3
 		};
 
 		auto glfwExtensions = getRequiredExtensions();
@@ -197,8 +198,11 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	void Renderer::createGraphicsPipeline()
 	{
-		auto pVertShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "./Shaders/vert.spv" ), m_LogicalDevice );
-		auto pFragShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "./Shaders/frag.spv" ), m_LogicalDevice );
+		RuntimeShaderCompiler::compile( "./Shaders/main.vert", "./Shaders/Compiled/main.vert.spv" );
+		RuntimeShaderCompiler::compile( "./Shaders/main.frag", "./Shaders/Compiled/main.frag.spv" );
+
+		auto pVertShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "./Shaders/Compiled/main.vert.spv" ), m_LogicalDevice );
+		auto pFragShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "./Shaders/Compiled/main.frag.spv" ), m_LogicalDevice );
 
 		VkShaderModule vertModule = pVertShader->getShaderModule();
 		VkShaderModule fragModule = pFragShader->getShaderModule();

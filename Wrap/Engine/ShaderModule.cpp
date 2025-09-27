@@ -5,7 +5,7 @@ namespace Engine {
 	ShaderModule::ShaderModule( const Path& _filename, VkDevice& _device )
 		: m_Device( _device )
 	{
-		auto code = readShaderFile( _filename );
+		auto code = readSPIRVShaderFile( _filename );
 		createShaderModule( code );
 	}
 
@@ -16,31 +16,34 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
-	std::vector<char> ShaderModule::readShaderFile( const Path& _filename )
+	std::vector<char> ShaderModule::readSPIRVShaderFile( const Path& _filename )
 	{
-		// ate -> seek end of stream immediately after open
-		std::ifstream stream( _filename, std::ios::binary | std::ios::ate );
-		assert( stream );
+		std::ifstream file( _filename, std::ios::ate | std::ios::binary );
 
-		auto size = (size_t)stream.tellg();
-		std::vector<char> buffer(size);
+		if ( !file.is_open() ) {
+			throw std::runtime_error( "failed to open file!" );
+		}
 
-		stream.seekg( 0, std::ios::beg );
-		assert( stream.read( buffer.data(), size ) );
+		size_t fileSize = (size_t)file.tellg();
+		std::vector<char> buffer( fileSize );
 
-		stream.close();
+		file.seekg( 0 );
+		file.read( buffer.data(), fileSize );
+
+		file.close();
+
 		return buffer;
 	}
 
 	//----------------------------------------------------------------------------------
 	void ShaderModule::createShaderModule( std::vector<char> _code )
 	{
-		VkShaderModuleCreateInfo createInfo {
+		VkShaderModuleCreateInfo createInfo{
 			.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
 			.codeSize = _code.size(),
-			.pCode = reinterpret_cast<const u32*>( _code.data() )
+			.pCode = reinterpret_cast<const uint32_t*>( _code.data() )
 		};
 
 		VK_ASSERT( vkCreateShaderModule( m_Device, &createInfo, nullptr, &m_ShaderModule ) );

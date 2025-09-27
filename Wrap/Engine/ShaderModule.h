@@ -26,7 +26,7 @@ namespace Engine {
 
 	private:
 		// Temp -> Later pre-compile here
-		std::vector<char> readShaderFile( const Path& _filename );
+		std::vector<char> readSPIRVShaderFile( const Path& _filename );
 		void createShaderModule( std::vector<char> _code );
 
 		VkShaderModule m_ShaderModule;
