@@ -149,6 +149,7 @@
     <ClCompile Include="Engine\SwapChain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Platforms\Windows\Display.cpp" />
+    <ClCompile Include="Utils\FileWatcher.cpp" />
     <ClCompile Include="Warp\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +158,7 @@
     <ClInclude Include="Engine\RuntimeShaderCompiler.h" />
     <ClInclude Include="Engine\ShaderModule.h" />
     <ClInclude Include="Engine\SwapChain.h" />
+    <ClInclude Include="Utils\FileWatcher.h" />
     <ClInclude Include="Warp\TriangleApp.h" />
     <ClInclude Include="Utils\Common.h" />
     <ClInclude Include="Platforms\Windows\Display.h" />

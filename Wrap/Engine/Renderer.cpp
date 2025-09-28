@@ -31,6 +31,8 @@ namespace Engine {
 
 		vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
 		vkDestroyInstance( m_Instance, nullptr );
+
+		m_ShaderWatcher.reset();
 	}
 
 	//----------------------------------------------------------------------------------
@@ -43,6 +45,7 @@ namespace Engine {
 
 		m_Swapchain = std::make_unique<Engine::SwapChain>( m_PhysicalDevice, m_LogicalDevice, m_Surface );
 		assert( isDeviceSuitable() );
+		m_ShaderWatcher = std::make_unique<FileWatcher>( "./Shaders", [this]( const std::filesystem::path& _path ) { this->onShaderModification( _path ); } );
 
 		createRenderPass();
 		createGraphicsPipeline();
@@ -196,8 +199,18 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
+	void Renderer::onShaderModification( const std::filesystem::path& _path )
+	{
+		std::filesystem::path outdir{ "./Shaders/Compiled" };
+		std::filesystem::path outfile{ outdir / _path.filename().append( ".spv" ) };
+
+		RuntimeShaderCompiler::compile( _path, outfile );
+	}
+
+	//----------------------------------------------------------------------------------
 	void Renderer::createGraphicsPipeline()
 	{
+
 		RuntimeShaderCompiler::compile( "./Shaders/main.vert", "./Shaders/Compiled/main.vert.spv" );
 		RuntimeShaderCompiler::compile( "./Shaders/main.frag", "./Shaders/Compiled/main.frag.spv" );
 

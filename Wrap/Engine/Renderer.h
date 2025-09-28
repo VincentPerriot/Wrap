@@ -2,6 +2,7 @@
 
 #include <optional>
 #include "../Utils/Common.h"
+#include "../Utils/FileWatcher.h"
 
 #include "vulkan/vulkan.h"
 #include "SwapChain.h"
@@ -50,6 +51,8 @@ namespace Engine {
 		void createLogicalDevice();
 		void createSurface( GLFWwindow* _pWindow );
 
+		void onShaderModification( const std::filesystem::path& _path );
+
 		void createGraphicsPipeline();
 		void createRenderPass();
 
@@ -77,5 +80,7 @@ namespace Engine {
 		VkPipeline m_GraphicsPipeline;
 		VkPipelineLayout m_PipelineLayout;
 		VkRenderPass m_RenderPass;
+
+		std::unique_ptr<FileWatcher> m_ShaderWatcher;
 	};
 } // End Namespace Engine
