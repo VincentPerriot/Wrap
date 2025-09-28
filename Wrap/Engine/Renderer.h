@@ -50,11 +50,14 @@ namespace Engine {
 		void setupPhysicalDevice();
 		void createLogicalDevice();
 		void createSurface( GLFWwindow* _pWindow );
+		void createGraphicsPipeline();
+		void createCommandPool();
+		void createCommandBuffer();
+		void createSyncObjects();
+
+		void recordCommandBuffer( u32 _imageIndex );
 
 		void onShaderModification( const std::filesystem::path& _path );
-
-		void createGraphicsPipeline();
-		void createRenderPass();
 
 		QueueFamilyIndices findQueueFamilies();
 
@@ -79,7 +82,13 @@ namespace Engine {
 
 		VkPipeline m_GraphicsPipeline;
 		VkPipelineLayout m_PipelineLayout;
-		VkRenderPass m_RenderPass;
+
+		VkCommandPool m_CommandPool;
+		VkCommandBuffer m_CommandBuffer;
+
+		VkSemaphore m_ImageAvailableSemaphore;
+		VkSemaphore m_RenderFinishedSemaphore;
+		VkFence m_inFlightFence;
 
 		std::unique_ptr<FileWatcher> m_ShaderWatcher;
 	};

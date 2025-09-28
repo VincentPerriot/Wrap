@@ -213,6 +213,10 @@ void RuntimeShaderCompiler::_compile( VkShaderStageFlagBits _stage, const char* 
 	{
 		std::cout << glslang_program_SPIRV_get_messages( program ) << std::endl;
 	}
+	else
+	{
+		std::cout << "GLSL Shader successfully compiled, generating SPIRV file." << std::endl;
+	}
 
 	const uint8_t* spirv = reinterpret_cast<const uint8_t*>( glslang_program_SPIRV_get_ptr( program ) );
 	const size_t size = glslang_program_SPIRV_get_size( program ) * sizeof( uint32_t );

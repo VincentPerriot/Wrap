@@ -19,7 +19,6 @@ namespace Engine {
 	{
 		vkDestroyPipeline( m_LogicalDevice, m_GraphicsPipeline, nullptr );
 		vkDestroyPipelineLayout( m_LogicalDevice, m_PipelineLayout, nullptr );
-		vkDestroyRenderPass( m_LogicalDevice, m_RenderPass, nullptr );
 		m_Swapchain.reset();
 
 		vkDestroyDevice( m_LogicalDevice, nullptr );
@@ -31,8 +30,14 @@ namespace Engine {
 
 		vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
 		vkDestroyInstance( m_Instance, nullptr );
+		vkDestroyCommandPool( m_LogicalDevice, m_CommandPool, nullptr );
+
+		vkDestroySemaphore( m_LogicalDevice, m_ImageAvailableSemaphore, nullptr );
+		vkDestroySemaphore( m_LogicalDevice, m_RenderFinishedSemaphore, nullptr );
+		vkDestroyFence( m_LogicalDevice, m_inFlightFence, nullptr );
 
 		m_ShaderWatcher.reset();
+		vkDeviceWaitIdle( m_LogicalDevice );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -47,8 +52,10 @@ namespace Engine {
 		assert( isDeviceSuitable() );
 		m_ShaderWatcher = std::make_unique<FileWatcher>( "./Shaders", [this]( const std::filesystem::path& _path ) { this->onShaderModification( _path ); } );
 
-		createRenderPass();
 		createGraphicsPipeline();
+		createCommandPool();
+		createCommandBuffer();
+		createSyncObjects();
 	}
 
 	//----------------------------------------------------------------------------------
@@ -59,7 +66,7 @@ namespace Engine {
 			assert( checkValidationSupport() );
 		}
 
-		const VkApplicationInfo appInfo = {
+		const VkApplicationInfo appInfo{
 			.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
 			.pNext = nullptr,
 			.pApplicationName = "warp_engine_app",
@@ -71,7 +78,7 @@ namespace Engine {
 
 		auto glfwExtensions = getRequiredExtensions();
 
-		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
 			.pNext = nullptr,
 			.flags = 0,
@@ -81,7 +88,7 @@ namespace Engine {
 			.pUserData = nullptr,
 		};
 
-		const VkInstanceCreateInfo createInfo = {
+		const VkInstanceCreateInfo createInfo{
 			.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 			.pNext = enableValidationLayers ? (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo : nullptr,
 			.flags = 0,
@@ -152,7 +159,7 @@ namespace Engine {
 	void Renderer::createLogicalDevice()
 	{
 		QueueFamilyIndices indices = findQueueFamilies();
-		std::set<u32> unique_queues = { indices.m_Graphics.value(), indices.m_Present.value() };
+		std::set<u32> unique_queues{ indices.m_Graphics.value(), indices.m_Present.value() };
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos( unique_queues.size() );
 
@@ -172,7 +179,7 @@ namespace Engine {
 		// Massive Struct -> GO back to it and pick features after more readings
 		VkPhysicalDeviceFeatures features{};
 
-		VkDeviceCreateInfo createInfo = {
+		VkDeviceCreateInfo createInfo{
 			.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -202,15 +209,17 @@ namespace Engine {
 	void Renderer::onShaderModification( const std::filesystem::path& _path )
 	{
 		std::filesystem::path outdir{ "./Shaders/Compiled" };
-		std::filesystem::path outfile{ outdir / _path.filename().append( ".spv" ) };
+		std::filesystem::path outfile{ outdir / _path.filename().concat( ".spv" ) };
 
 		RuntimeShaderCompiler::compile( _path, outfile );
+
+		// Prob need to recreate pipeline here? Careful with thread too?
 	}
 
 	//----------------------------------------------------------------------------------
 	void Renderer::createGraphicsPipeline()
 	{
-
+	
 		RuntimeShaderCompiler::compile( "./Shaders/main.vert", "./Shaders/Compiled/main.vert.spv" );
 		RuntimeShaderCompiler::compile( "./Shaders/main.frag", "./Shaders/Compiled/main.frag.spv" );
 
@@ -220,7 +229,7 @@ namespace Engine {
 		VkShaderModule vertModule = pVertShader->getShaderModule();
 		VkShaderModule fragModule = pFragShader->getShaderModule();
 
-		VkPipelineShaderStageCreateInfo vertCreateInfo = {
+		VkPipelineShaderStageCreateInfo vertCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -230,7 +239,7 @@ namespace Engine {
 			.pSpecializationInfo = nullptr
 		};
 
-		VkPipelineShaderStageCreateInfo fragCreateInfo = {
+		VkPipelineShaderStageCreateInfo fragCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -240,11 +249,11 @@ namespace Engine {
 			.pSpecializationInfo = nullptr
 		};
 
-		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStageCreateInfos = { vertCreateInfo, fragCreateInfo };
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStageCreateInfos{ vertCreateInfo, fragCreateInfo };
 
-		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		std::vector<VkDynamicState> dynamicStates{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
-		VkPipelineDynamicStateCreateInfo dynCreateInfo = {
+		VkPipelineDynamicStateCreateInfo dynCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -252,7 +261,7 @@ namespace Engine {
 			.pDynamicStates = dynamicStates.data()
 		};
 
-		VkPipelineVertexInputStateCreateInfo vertInputCreateInfo = {
+		VkPipelineVertexInputStateCreateInfo vertInputCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -262,7 +271,7 @@ namespace Engine {
 			.pVertexAttributeDescriptions = nullptr
 		};
 
-		VkPipelineInputAssemblyStateCreateInfo assemblyCreateInfo = {
+		VkPipelineInputAssemblyStateCreateInfo assemblyCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -270,7 +279,7 @@ namespace Engine {
 			.primitiveRestartEnable = VK_FALSE
 		};
 
-		VkViewport viewport = {
+		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
 			.width = static_cast<float>( m_Swapchain->getExtentWidth() ),
@@ -279,12 +288,12 @@ namespace Engine {
 			.maxDepth = 1.0f
 		};
 
-		VkRect2D scissor = {
-			.offset = VkOffset2D{ (u32)0, (u32)0 },
+		VkRect2D scissor{
+			.offset = VkOffset2D{ 0, 0 },
 			.extent = VkExtent2D{ m_Swapchain->getExtentWidth(), m_Swapchain->getExtentHeight() }
 		};
 
-		VkPipelineViewportStateCreateInfo viewPortStateCreateInfo = {
+		VkPipelineViewportStateCreateInfo viewPortStateCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -294,7 +303,7 @@ namespace Engine {
 			.pScissors = &scissor
 		};
 
-		VkPipelineRasterizationStateCreateInfo rasterizer = {
+		VkPipelineRasterizationStateCreateInfo rasterizer{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -302,7 +311,7 @@ namespace Engine {
 			.rasterizerDiscardEnable = VK_FALSE,
 			.polygonMode = VK_POLYGON_MODE_FILL,
 			.cullMode = VK_CULL_MODE_BACK_BIT,
-			.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+			.frontFace = VK_FRONT_FACE_CLOCKWISE,
 			.depthBiasEnable = VK_FALSE,
 			.depthBiasConstantFactor = 0.0f,
 			.depthBiasClamp = 0.0f,
@@ -310,7 +319,7 @@ namespace Engine {
 			.lineWidth = 1.0f
 		};
 
-		VkPipelineMultisampleStateCreateInfo multisampling = {
+		VkPipelineMultisampleStateCreateInfo multisampling{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -322,7 +331,7 @@ namespace Engine {
 			.alphaToOneEnable = VK_FALSE
 		};
 
-		VkPipelineColorBlendAttachmentState colorBlendAttachment = {
+		VkPipelineColorBlendAttachmentState colorBlendAttachment{
 			.blendEnable = VK_TRUE,
 			.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
 			.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -333,7 +342,7 @@ namespace Engine {
 			.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
 		};
 
-		VkPipelineColorBlendStateCreateInfo colorBlending = {
+		VkPipelineColorBlendStateCreateInfo colorBlending{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -344,7 +353,7 @@ namespace Engine {
 			.blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
 		};
 
-		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
+		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -356,7 +365,7 @@ namespace Engine {
 
 		VK_ASSERT( vkCreatePipelineLayout( m_LogicalDevice, &pipelineLayoutCreateInfo, nullptr, &m_PipelineLayout ) );
 
-		VkGraphicsPipelineCreateInfo pipelineCreateInfo = {
+		VkGraphicsPipelineCreateInfo pipelineCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
@@ -372,61 +381,114 @@ namespace Engine {
 			.pColorBlendState = &colorBlending,
 			.pDynamicState = &dynCreateInfo,
 			.layout = m_PipelineLayout,
-			.renderPass = m_RenderPass,
+			.renderPass = m_Swapchain->getRenderPass(),
 			.subpass = 0,
 			.basePipelineHandle = VK_NULL_HANDLE,
 			.basePipelineIndex = -1
 		};
 
 		VK_ASSERT( vkCreateGraphicsPipelines( m_LogicalDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_GraphicsPipeline ) );
+
+		pVertShader.reset();
+		pFragShader.reset();
 	}
 
 	//----------------------------------------------------------------------------------
-	void Renderer::createRenderPass()
+	void Renderer::createCommandPool()
 	{
-		VkAttachmentDescription colorAttachment = {
-			.flags = 0,
-			.format = m_Swapchain->getImageFormat().format,
-			.samples = VK_SAMPLE_COUNT_1_BIT,
-			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+		QueueFamilyIndices queueFamIndices = findQueueFamilies();
+
+		VkCommandPoolCreateInfo poolInfo{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+			.queueFamilyIndex = queueFamIndices.m_Graphics.value()
 		};
 
-		VkAttachmentReference colorAttachmentRef = {
-			.attachment = 0,
-			.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		VK_ASSERT( vkCreateCommandPool( m_LogicalDevice, &poolInfo, nullptr, &m_CommandPool ) );
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::createCommandBuffer()
+	{
+		VkCommandBufferAllocateInfo allocInfo{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.pNext = nullptr,
+			.commandPool = m_CommandPool,
+			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = 1
 		};
 
-		VkSubpassDescription subpass = {
-			.flags = 0,
-			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-			.inputAttachmentCount = 0,
-			.pInputAttachments = nullptr,
-			.colorAttachmentCount = 1,
-			.pColorAttachments = &colorAttachmentRef,
-			.pResolveAttachments = nullptr,
-			.pDepthStencilAttachment = nullptr,
-			.preserveAttachmentCount = 0,
-			.pPreserveAttachments = nullptr
+		VK_ASSERT( vkAllocateCommandBuffers( m_LogicalDevice, &allocInfo, &m_CommandBuffer ) );
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::createSyncObjects()
+	{
+		VkSemaphoreCreateInfo semaphoreInfo{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0
 		};
 
-		VkRenderPassCreateInfo createInfo = {
-			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+		VkFenceCreateInfo fenceInfo{
+			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = VK_FENCE_CREATE_SIGNALED_BIT
+		};
+
+		VK_ASSERT( vkCreateSemaphore( m_LogicalDevice, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore ) );
+		VK_ASSERT( vkCreateSemaphore( m_LogicalDevice, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore ) );
+		VK_ASSERT( vkCreateFence( m_LogicalDevice, &fenceInfo, nullptr, &m_inFlightFence ) );
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::recordCommandBuffer( u32 _imageIndex )
+	{
+		VkCommandBufferBeginInfo beginInfo{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.attachmentCount = 1,
-			.pAttachments = &colorAttachment,
-			.subpassCount = 1,
-			.pSubpasses = &subpass,
-			.dependencyCount = 0,
-			.pDependencies = nullptr
+			.pInheritanceInfo = nullptr
 		};
 
-		VK_ASSERT( vkCreateRenderPass( m_LogicalDevice, &createInfo, nullptr, &m_RenderPass ) );
+		VK_ASSERT( vkBeginCommandBuffer( m_CommandBuffer, &beginInfo ) );
+
+		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+		VkRenderPassBeginInfo passInfo{
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.pNext = nullptr,
+			.renderPass = m_Swapchain->getRenderPass(),
+			.framebuffer = m_Swapchain->getFrameBuffer( _imageIndex ),
+			.renderArea = VkRect2D{.offset = {0, 0}, .extent = VkExtent2D { m_Swapchain->getExtentWidth(), m_Swapchain->getExtentHeight() } },
+			.clearValueCount = 1,
+			.pClearValues = &clearColor
+		};
+
+		vkCmdBeginRenderPass( m_CommandBuffer, &passInfo, VK_SUBPASS_CONTENTS_INLINE );
+
+		vkCmdBindPipeline( m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline );
+
+		VkViewport viewport{
+			.x = 0.0f,
+			.y = 0.0f,
+			.width = static_cast<float>( m_Swapchain->getExtentWidth() ),
+			.height = static_cast<float>( m_Swapchain->getExtentHeight() ),
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f
+		};
+		vkCmdSetViewport( m_CommandBuffer, 0, 1, &viewport );
+
+		VkRect2D scissor{
+			.offset = VkOffset2D{ 0, 0 },
+			.extent = VkExtent2D{ m_Swapchain->getExtentWidth(), m_Swapchain->getExtentHeight() }
+		};
+		vkCmdSetScissor( m_CommandBuffer, 0, 1, &scissor );
+
+		vkCmdDraw( m_CommandBuffer, 3, 1, 0, 0 );
+
+		vkCmdEndRenderPass( m_CommandBuffer );
+		VK_ASSERT( vkEndCommandBuffer( m_CommandBuffer ) );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -453,7 +515,7 @@ namespace Engine {
 				indices.m_Graphics = idx;
 
 			// According to Vulkan Doc -> explicitly prefer a physical device that supports drawing and presentation in the same queue 
-			// Here we make it a requirement and create our swapchain with VK_SHARING_MODE_EXCLUSIVE
+			// Here, make it a requirement and create swapchain with VK_SHARING_MODE_EXCLUSIVE
 			if ( indices.verifyGraphics() && indices.m_Present == indices.m_Graphics )
 				break;
 
@@ -540,6 +602,47 @@ namespace Engine {
 			m_Swapchain->m_BufferResized = false;
 			m_Swapchain->recreateSwapChain();
 		}
+
+		vkWaitForFences( m_LogicalDevice, 1, &m_inFlightFence, VK_TRUE, UINT64_MAX );
+		vkResetFences( m_LogicalDevice, 1, &m_inFlightFence );
+
+		u32 imageIndex;
+		vkAcquireNextImageKHR( m_LogicalDevice, m_Swapchain->m_VkSwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex );
+
+		vkResetCommandBuffer( m_CommandBuffer, 0 );
+		recordCommandBuffer( imageIndex );
+
+		std::array<VkSemaphore, 1> waitSemaphores{ m_ImageAvailableSemaphore };
+		std::array<VkSemaphore, 1> signalSemaphores{ m_RenderFinishedSemaphore };
+		std::array<VkPipelineStageFlags, 1> waitStages{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+		VkSubmitInfo submitInfo{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.pNext = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = waitSemaphores.data(),
+			.pWaitDstStageMask = waitStages.data(),
+			.commandBufferCount = 1,
+			.pCommandBuffers = &m_CommandBuffer,
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores = signalSemaphores.data()
+		};
+
+		VK_ASSERT( vkQueueSubmit( m_GraphicsQueue, 1, &submitInfo, m_inFlightFence ) );
+
+		std::array<VkSwapchainKHR, 1> swapChains{ m_Swapchain->m_VkSwapChain };
+		VkPresentInfoKHR presentInfo{
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.pNext = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = signalSemaphores.data(),
+			.swapchainCount = 1,
+			.pSwapchains = swapChains.data(),
+			.pImageIndices = &imageIndex,
+			.pResults = nullptr
+		};
+
+		vkQueuePresentKHR( m_PresentQueue, &presentInfo );
 	}
 
 	//----------------------------------------------------------------------------------

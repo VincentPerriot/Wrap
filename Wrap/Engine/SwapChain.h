@@ -25,10 +25,12 @@ namespace Engine {
 		SwapChain& operator=( SwapChain&& ) = delete;
 
 		VkSwapchainKHR m_VkSwapChain;
+
 		SwapChainSupportDetails getSupportDetails();
 		u32 getExtentWidth();
 		u32 getExtentHeight();
-		VkSurfaceFormatKHR getImageFormat();
+		VkRenderPass getRenderPass();
+		VkFramebuffer getFrameBuffer( u32 _index );
 
 		bool isAdequate();
 		void recreateSwapChain();
@@ -42,10 +44,13 @@ namespace Engine {
 		VkSurfaceFormatKHR chooseSwapSurfaceFormat();
 		VkPresentModeKHR choosePresentMode();
 		VkExtent2D chooseSwapExtent();
+
 		void createSwapChain();
 		void createImageViews();
+		void createFrameBuffers();
 
 		void cleanUpSwapChain();
+		void createRenderPass();
 
 		SwapChainSupportDetails m_SupportDetails;
 		VkDevice& m_Device;
@@ -56,6 +61,10 @@ namespace Engine {
 
 		VkSurfaceFormatKHR m_SelectedFormat;
 		VkPresentModeKHR m_SelectedPresentMode;
+
+		VkRenderPass m_RenderPass;
+
+		std::vector<VkFramebuffer> m_FrameBuffers;
 
 		VkSurfaceKHR& m_Surface;
 		VkExtent2D m_Extent;

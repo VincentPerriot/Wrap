@@ -9,12 +9,16 @@ Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _devi
 {
 	querySwapChainDetails();
 	createSwapChain();
+	createImageViews();
+	createRenderPass();
+	createFrameBuffers();
 }
 
 //------------------------------------------------------------------------------------
 Engine::SwapChain::~SwapChain()
 {
 	cleanUpSwapChain();
+	vkDestroyRenderPass( m_Device, m_RenderPass, nullptr );
 }
 
 //------------------------------------------------------------------------------------
@@ -37,9 +41,16 @@ u32 Engine::SwapChain::getExtentHeight()
 }
 
 //------------------------------------------------------------------------------------
-VkSurfaceFormatKHR Engine::SwapChain::getImageFormat()
+VkRenderPass Engine::SwapChain::getRenderPass()
 {
-	return m_SelectedFormat;
+	return m_RenderPass;
+}
+
+//------------------------------------------------------------------------------------
+VkFramebuffer Engine::SwapChain::getFrameBuffer( u32 _index )
+{
+	assert( _index < m_FrameBuffers.size() );
+	return m_FrameBuffers[_index];
 }
 
 //------------------------------------------------------------------------------------
@@ -69,7 +80,7 @@ VkSurfaceFormatKHR Engine::SwapChain::chooseSwapSurfaceFormat()
 {
 	for ( const auto& format : m_SupportDetails.m_Formats )
 	{
-		if ( format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR )
+		if ( format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR )
 			return format;
 	}
 	return m_SupportDetails.m_Formats[0];
@@ -90,7 +101,7 @@ VkPresentModeKHR Engine::SwapChain::choosePresentMode()
 //------------------------------------------------------------------------------------
 VkExtent2D Engine::SwapChain::chooseSwapExtent()
 {
-	if ( m_SupportDetails.m_Capabilities.currentExtent.width == std::numeric_limits<u32>::max() )
+	if ( m_SupportDetails.m_Capabilities.currentExtent.width != std::numeric_limits<u32>::max() )
 		return m_SupportDetails.m_Capabilities.currentExtent;
 	else {
 		VkExtent2D extent = { Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT };
@@ -181,6 +192,31 @@ void Engine::SwapChain::createImageViews()
 }
 
 //------------------------------------------------------------------------------------
+void Engine::SwapChain::createFrameBuffers()
+{
+	m_FrameBuffers.resize( m_ImageViews.size() );
+
+	for ( size_t i = 0; i < m_ImageViews.size(); i++ )
+	{
+		std::array<VkImageView, 1> attachments{ m_ImageViews[i] };
+
+		VkFramebufferCreateInfo info{
+			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.renderPass = m_RenderPass,
+			.attachmentCount = 1,
+			.pAttachments = attachments.data(),
+			.width = getExtentWidth(),
+			.height = getExtentHeight(),
+			.layers = 1
+		};
+
+		VK_ASSERT( vkCreateFramebuffer( m_Device, &info, nullptr, &m_FrameBuffers[i] ) );
+	}
+}
+
+//------------------------------------------------------------------------------------
 void Engine::SwapChain::recreateSwapChain()
 {
 	vkDeviceWaitIdle( m_Device );
@@ -190,6 +226,7 @@ void Engine::SwapChain::recreateSwapChain()
 	querySwapChainDetails();
 	createSwapChain();
 	createImageViews();
+	createFrameBuffers();
 }
 
 //------------------------------------------------------------------------------------
@@ -199,6 +236,72 @@ void Engine::SwapChain::cleanUpSwapChain()
 	{
 		vkDestroyImageView( m_Device, imageview, nullptr );
 	}
+	m_ImageViews.clear();
+
+	for ( auto& frameBuffer : m_FrameBuffers )
+	{
+		vkDestroyFramebuffer( m_Device, frameBuffer, nullptr );
+	}
+	m_FrameBuffers.clear();
 
 	vkDestroySwapchainKHR( m_Device, m_VkSwapChain, nullptr );
+}
+
+//----------------------------------------------------------------------------------
+void Engine::SwapChain::createRenderPass()
+{
+	VkAttachmentDescription colorAttachment {
+		.flags = 0,
+		.format = m_SelectedFormat.format,
+		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	};
+
+	VkAttachmentReference colorAttachmentRef = {
+		.attachment = 0,
+		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	};
+
+	VkSubpassDescription subpass {
+		.flags = 0,
+		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+		.inputAttachmentCount = 0,
+		.pInputAttachments = nullptr,
+		.colorAttachmentCount = 1,
+		.pColorAttachments = &colorAttachmentRef,
+		.pResolveAttachments = nullptr,
+		.pDepthStencilAttachment = nullptr,
+		.preserveAttachmentCount = 0,
+		.pPreserveAttachments = nullptr
+	};
+
+	VkSubpassDependency dependency {
+		.srcSubpass = VK_SUBPASS_EXTERNAL,
+		.dstSubpass = 0,
+		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.srcAccessMask = 0,
+		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		.dependencyFlags = 0
+	};
+
+
+	VkRenderPassCreateInfo createInfo = {
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.attachmentCount = 1,
+		.pAttachments = &colorAttachment,
+		.subpassCount = 1,
+		.pSubpasses = &subpass,
+		.dependencyCount = 1,
+		.pDependencies = &dependency
+	};
+
+	VK_ASSERT( vkCreateRenderPass( m_Device, &createInfo, nullptr, &m_RenderPass ) );
 }
