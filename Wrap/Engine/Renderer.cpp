@@ -34,9 +34,12 @@ namespace Engine {
 		vkDestroyInstance( m_Instance, nullptr );
 		vkDestroyCommandPool( m_LogicalDevice, m_CommandPool, nullptr );
 
-		vkDestroySemaphore( m_LogicalDevice, m_ImageAvailableSemaphore, nullptr );
-		vkDestroySemaphore( m_LogicalDevice, m_RenderFinishedSemaphore, nullptr );
-		vkDestroyFence( m_LogicalDevice, m_inFlightFence, nullptr );
+		for ( size_t i = 0; i < FRAMES_IN_FLIGHT; i++ )
+		{
+			vkDestroySemaphore( m_LogicalDevice, m_ImageAvailableSemaphores[i], nullptr );
+			vkDestroySemaphore( m_LogicalDevice, m_RenderFinishedSemaphores[i], nullptr );
+			vkDestroyFence( m_LogicalDevice, m_inFlightFences[i], nullptr );
+		}
 
 		m_ShaderWatcher.reset();
 	}
@@ -55,7 +58,7 @@ namespace Engine {
 
 		createGraphicsPipeline( true );
 		createCommandPool();
-		createCommandBuffer();
+		createCommandBuffers();
 		createSyncObjects();
 	}
 
@@ -216,6 +219,8 @@ namespace Engine {
 
 		if ( RuntimeShaderCompiler::compile( _path, outfile ) )
 		{
+			vkDeviceWaitIdle( m_LogicalDevice );
+
 			if ( m_GraphicsPipeline != VK_NULL_HANDLE )
 				vkDestroyPipeline( m_LogicalDevice, m_GraphicsPipeline, nullptr );
 
@@ -421,37 +426,46 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
-	void Renderer::createCommandBuffer()
+	void Renderer::createCommandBuffers()
 	{
+		m_CommandBuffers.resize( FRAMES_IN_FLIGHT );
+
 		VkCommandBufferAllocateInfo allocInfo{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			.pNext = nullptr,
 			.commandPool = m_CommandPool,
 			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			.commandBufferCount = 1
+			.commandBufferCount = (u32)m_CommandBuffers.size()
 		};
 
-		VK_ASSERT( vkAllocateCommandBuffers( m_LogicalDevice, &allocInfo, &m_CommandBuffer ) );
+		VK_ASSERT( vkAllocateCommandBuffers( m_LogicalDevice, &allocInfo, m_CommandBuffers.data() ) );
 	}
 
 	//----------------------------------------------------------------------------------
 	void Renderer::createSyncObjects()
 	{
-		VkSemaphoreCreateInfo semaphoreInfo{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0
-		};
+		m_ImageAvailableSemaphores.resize( FRAMES_IN_FLIGHT );
+		m_RenderFinishedSemaphores.resize( FRAMES_IN_FLIGHT );
+		m_inFlightFences.resize( FRAMES_IN_FLIGHT );
 
-		VkFenceCreateInfo fenceInfo{
-			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = VK_FENCE_CREATE_SIGNALED_BIT
-		};
+		for ( size_t i = 0; i < FRAMES_IN_FLIGHT; i++ )
+		{
+			VkSemaphoreCreateInfo semaphoreInfo{
+				.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+				.pNext = nullptr,
+				.flags = 0
+			};
 
-		VK_ASSERT( vkCreateSemaphore( m_LogicalDevice, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore ) );
-		VK_ASSERT( vkCreateSemaphore( m_LogicalDevice, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore ) );
-		VK_ASSERT( vkCreateFence( m_LogicalDevice, &fenceInfo, nullptr, &m_inFlightFence ) );
+			VkFenceCreateInfo fenceInfo{
+				.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+				.pNext = nullptr,
+				.flags = VK_FENCE_CREATE_SIGNALED_BIT
+			};
+
+			VK_ASSERT( vkCreateSemaphore( m_LogicalDevice, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i] ) );
+			VK_ASSERT( vkCreateSemaphore( m_LogicalDevice, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i] ) );
+			VK_ASSERT( vkCreateFence( m_LogicalDevice, &fenceInfo, nullptr, &m_inFlightFences[i] ) );
+		}
 	}
 
 	//----------------------------------------------------------------------------------
@@ -466,7 +480,7 @@ namespace Engine {
 			.pInheritanceInfo = nullptr
 		};
 
-		VK_ASSERT( vkBeginCommandBuffer( m_CommandBuffer, &beginInfo ) );
+		VK_ASSERT( vkBeginCommandBuffer( m_CommandBuffers[m_CurrentFrame], &beginInfo ) );
 
 		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 		VkRenderPassBeginInfo passInfo{
@@ -479,9 +493,9 @@ namespace Engine {
 			.pClearValues = &clearColor
 		};
 
-		vkCmdBeginRenderPass( m_CommandBuffer, &passInfo, VK_SUBPASS_CONTENTS_INLINE );
+		vkCmdBeginRenderPass( m_CommandBuffers[m_CurrentFrame], &passInfo, VK_SUBPASS_CONTENTS_INLINE );
 
-		vkCmdBindPipeline( m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline );
+		vkCmdBindPipeline( m_CommandBuffers[m_CurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline );
 
 		VkViewport viewport{
 			.x = 0.0f,
@@ -491,18 +505,18 @@ namespace Engine {
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f
 		};
-		vkCmdSetViewport( m_CommandBuffer, 0, 1, &viewport );
+		vkCmdSetViewport( m_CommandBuffers[m_CurrentFrame], 0, 1, &viewport );
 
 		VkRect2D scissor{
 			.offset = VkOffset2D{ 0, 0 },
 			.extent = VkExtent2D{ m_Swapchain->getExtentWidth(), m_Swapchain->getExtentHeight() }
 		};
-		vkCmdSetScissor( m_CommandBuffer, 0, 1, &scissor );
+		vkCmdSetScissor( m_CommandBuffers[m_CurrentFrame], 0, 1, &scissor );
 
-		vkCmdDraw( m_CommandBuffer, 3, 1, 0, 0 );
+		vkCmdDraw( m_CommandBuffers[m_CurrentFrame], 3, 1, 0, 0 );
 
-		vkCmdEndRenderPass( m_CommandBuffer );
-		VK_ASSERT( vkEndCommandBuffer( m_CommandBuffer ) );
+		vkCmdEndRenderPass( m_CommandBuffers[m_CurrentFrame] );
+		VK_ASSERT( vkEndCommandBuffer( m_CommandBuffers[m_CurrentFrame] ) );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -617,17 +631,17 @@ namespace Engine {
 			m_Swapchain->recreateSwapChain();
 		}
 
-		vkWaitForFences( m_LogicalDevice, 1, &m_inFlightFence, VK_TRUE, UINT64_MAX );
-		vkResetFences( m_LogicalDevice, 1, &m_inFlightFence );
+		vkWaitForFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX );
+		vkResetFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame] );
 
 		u32 imageIndex;
-		vkAcquireNextImageKHR( m_LogicalDevice, m_Swapchain->m_VkSwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex );
+		vkAcquireNextImageKHR( m_LogicalDevice, m_Swapchain->m_VkSwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex );
 
-		vkResetCommandBuffer( m_CommandBuffer, 0 );
+		vkResetCommandBuffer( m_CommandBuffers[m_CurrentFrame], 0 );
 		recordCommandBuffer( imageIndex );
 
-		std::array<VkSemaphore, 1> waitSemaphores{ m_ImageAvailableSemaphore };
-		std::array<VkSemaphore, 1> signalSemaphores{ m_RenderFinishedSemaphore };
+		std::array<VkSemaphore, 1> waitSemaphores{ m_ImageAvailableSemaphores[m_CurrentFrame] };
+		std::array<VkSemaphore, 1> signalSemaphores{ m_RenderFinishedSemaphores[m_CurrentFrame] };
 		std::array<VkPipelineStageFlags, 1> waitStages{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 		VkSubmitInfo submitInfo{
@@ -637,12 +651,12 @@ namespace Engine {
 			.pWaitSemaphores = waitSemaphores.data(),
 			.pWaitDstStageMask = waitStages.data(),
 			.commandBufferCount = 1,
-			.pCommandBuffers = &m_CommandBuffer,
+			.pCommandBuffers = &m_CommandBuffers[m_CurrentFrame],
 			.signalSemaphoreCount = 1,
 			.pSignalSemaphores = signalSemaphores.data()
 		};
 
-		VK_ASSERT( vkQueueSubmit( m_GraphicsQueue, 1, &submitInfo, m_inFlightFence ) );
+		VK_ASSERT( vkQueueSubmit( m_GraphicsQueue, 1, &submitInfo, m_inFlightFences[m_CurrentFrame] ) );
 
 		std::array<VkSwapchainKHR, 1> swapChains{ m_Swapchain->m_VkSwapChain };
 		VkPresentInfoKHR presentInfo{
@@ -657,6 +671,8 @@ namespace Engine {
 		};
 
 		vkQueuePresentKHR( m_PresentQueue, &presentInfo );
+
+		m_CurrentFrame = ( m_CurrentFrame + 1 ) % FRAMES_IN_FLIGHT;
 	}
 
 	//----------------------------------------------------------------------------------

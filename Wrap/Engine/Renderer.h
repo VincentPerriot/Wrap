@@ -21,6 +21,8 @@ namespace Engine {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
+	constexpr u32 FRAMES_IN_FLIGHT = 2;
+
 	struct QueueFamilyIndices {
 		std::optional<u32> m_Graphics;
 		std::optional<u32> m_Present;
@@ -54,7 +56,7 @@ namespace Engine {
 		void createSurface( GLFWwindow* _pWindow );
 		void createGraphicsPipeline( bool _compile );
 		void createCommandPool();
-		void createCommandBuffer();
+		void createCommandBuffers();
 		void createSyncObjects();
 
 		void recordCommandBuffer( u32 _imageIndex );
@@ -86,11 +88,13 @@ namespace Engine {
 		VkPipelineLayout m_PipelineLayout;
 
 		VkCommandPool m_CommandPool;
-		VkCommandBuffer m_CommandBuffer;
+		std::vector<VkCommandBuffer> m_CommandBuffers;
 
-		VkSemaphore m_ImageAvailableSemaphore;
-		VkSemaphore m_RenderFinishedSemaphore;
-		VkFence m_inFlightFence;
+		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+		std::vector<VkFence> m_inFlightFences;
+
+		u32 m_CurrentFrame{ 0 };
 
 		std::unique_ptr<FileWatcher> m_ShaderWatcher;
 
