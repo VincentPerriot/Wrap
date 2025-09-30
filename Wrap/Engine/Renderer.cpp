@@ -625,17 +625,21 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	void Renderer::drawFrames()
 	{
-		if ( m_Swapchain->m_BufferResized )
-		{
-			m_Swapchain->m_BufferResized = false;
-			m_Swapchain->recreateSwapChain();
-		}
-
 		vkWaitForFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX );
-		vkResetFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame] );
 
 		u32 imageIndex;
-		vkAcquireNextImageKHR( m_LogicalDevice, m_Swapchain->m_VkSwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex );
+
+		VkResult res = vkAcquireNextImageKHR( m_LogicalDevice, m_Swapchain->m_VkSwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex );
+
+		if ( m_Swapchain->m_BufferResized || res == VK_ERROR_OUT_OF_DATE_KHR )
+		{
+			m_Swapchain->m_BufferResized = false;
+			createSyncObjects();
+			m_Swapchain->recreateSwapChain();
+			return;
+		}
+
+		vkResetFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame] );
 
 		vkResetCommandBuffer( m_CommandBuffers[m_CurrentFrame], 0 );
 		recordCommandBuffer( imageIndex );
