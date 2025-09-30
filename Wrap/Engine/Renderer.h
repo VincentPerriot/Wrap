@@ -1,6 +1,8 @@
 #pragma once
 
 #include <optional>
+#include <mutex>
+
 #include "../Utils/Common.h"
 #include "../Utils/FileWatcher.h"
 
@@ -50,7 +52,7 @@ namespace Engine {
 		void setupPhysicalDevice();
 		void createLogicalDevice();
 		void createSurface( GLFWwindow* _pWindow );
-		void createGraphicsPipeline();
+		void createGraphicsPipeline( bool _compile );
 		void createCommandPool();
 		void createCommandBuffer();
 		void createSyncObjects();
@@ -91,5 +93,7 @@ namespace Engine {
 		VkFence m_inFlightFence;
 
 		std::unique_ptr<FileWatcher> m_ShaderWatcher;
+
+		std::mutex m_mutPipelineAccess;
 	};
 } // End Namespace Engine

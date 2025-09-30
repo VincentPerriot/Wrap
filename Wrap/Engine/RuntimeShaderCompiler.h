@@ -7,7 +7,7 @@
 class RuntimeShaderCompiler
 {
 public:
-	static void compile( std::filesystem::path _source, std::filesystem::path _dest );
+	static bool compile( std::filesystem::path _source, std::filesystem::path _dest );
 
 private:
 	static std::string readShaderFile( std::string_view _filename );
@@ -16,5 +16,5 @@ private:
 	static VkShaderStageFlagBits vkShaderStageFromFile( std::string_view _filename );
 	static glslang_stage_t getGlslLangStage( VkShaderStageFlagBits _stage );
 
-	static void _compile( VkShaderStageFlagBits stage, const char* code, std::vector<uint8_t>* outSPIRV, const glslang_resource_t* glslLangResource );
+	static bool _compile( VkShaderStageFlagBits stage, const char* code, std::vector<uint8_t>* outSPIRV, const glslang_resource_t* glslLangResource );
 };

@@ -12,7 +12,7 @@
 
 
 //--------------------------------------------------------------------
-void RuntimeShaderCompiler::compile( std::filesystem::path _source, std::filesystem::path _dest )
+bool RuntimeShaderCompiler::compile( std::filesystem::path _source, std::filesystem::path _dest )
 {
 	std::string source = _source.string();
 	std::string dest = _dest.string();
@@ -20,9 +20,13 @@ void RuntimeShaderCompiler::compile( std::filesystem::path _source, std::filesys
 	std::string sourceShader = readShaderFile( source );
 	std::vector<uint8_t> spirv;
 
-	_compile( vkShaderStageFromFile( source ), sourceShader.c_str(), &spirv, glslang_default_resource() );
+	if ( _compile( vkShaderStageFromFile( source ), sourceShader.c_str(), &spirv, glslang_default_resource() ) )
+	{
+		saveSPRIVBin( dest, spirv.data(), spirv.size() );
+		return true;
+	}
 
-	saveSPRIVBin( dest, spirv.data(), spirv.size() );
+	return false;
 }
 
 //--------------------------------------------------------------------
@@ -145,11 +149,11 @@ glslang_stage_t RuntimeShaderCompiler::getGlslLangStage( VkShaderStageFlagBits _
 }
 
 //--------------------------------------------------------------------
-void RuntimeShaderCompiler::_compile( VkShaderStageFlagBits _stage, const char* _code, std::vector<uint8_t>* _outSPIRV, const glslang_resource_t* _glslLangResource )
+bool RuntimeShaderCompiler::_compile( VkShaderStageFlagBits _stage, const char* _code, std::vector<uint8_t>* _outSPIRV, const glslang_resource_t* _glslLangResource )
 {
 	if ( !glslang_initialize_process() ) {
 		std::cerr << "Failed to initialize glslang process" << std::endl;
-		return;
+		return false;
 	}
 
 	const glslang_input_t input = {
@@ -175,14 +179,14 @@ void RuntimeShaderCompiler::_compile( VkShaderStageFlagBits _stage, const char* 
 		std::cerr << "Shader Process Failed" << std::endl;
 		std::cerr << glslang_shader_get_info_log( shader ) << std::endl;
 		std::cerr << glslang_shader_get_info_debug_log( shader ) << std::endl;
-		return;
+		return false;
 	}
 	if ( !glslang_shader_parse( shader, &input ) )
 	{
 		std::cerr << "Shader Parse Failed" << std::endl;
 		std::cerr << glslang_shader_get_info_log( shader ) << std::endl;
 		std::cerr << glslang_shader_get_info_debug_log( shader ) << std::endl;
-		return;
+		return false;
 	}
 
 	glslang_program_t* program = glslang_program_create();
@@ -193,7 +197,7 @@ void RuntimeShaderCompiler::_compile( VkShaderStageFlagBits _stage, const char* 
 		std::cerr << "Program Linking Failed" << std::endl;
 		std::cerr << glslang_program_get_info_log( program ) << std::endl;
 		std::cerr << glslang_program_get_info_debug_log( program ) << std::endl;
-		return;
+		return false;
 	}
 
 	glslang_spv_options_t options = {
@@ -227,4 +231,6 @@ void RuntimeShaderCompiler::_compile( VkShaderStageFlagBits _stage, const char* 
 	glslang_shader_delete( shader );
 
 	glslang_finalize_process();
+
+	return true;
 }

@@ -17,6 +17,8 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	Renderer::~Renderer()
 	{
+		vkDeviceWaitIdle( m_LogicalDevice );
+
 		vkDestroyPipeline( m_LogicalDevice, m_GraphicsPipeline, nullptr );
 		vkDestroyPipelineLayout( m_LogicalDevice, m_PipelineLayout, nullptr );
 		m_Swapchain.reset();
@@ -37,7 +39,6 @@ namespace Engine {
 		vkDestroyFence( m_LogicalDevice, m_inFlightFence, nullptr );
 
 		m_ShaderWatcher.reset();
-		vkDeviceWaitIdle( m_LogicalDevice );
 	}
 
 	//----------------------------------------------------------------------------------
@@ -52,7 +53,7 @@ namespace Engine {
 		assert( isDeviceSuitable() );
 		m_ShaderWatcher = std::make_unique<FileWatcher>( "./Shaders", [this]( const std::filesystem::path& _path ) { this->onShaderModification( _path ); } );
 
-		createGraphicsPipeline();
+		createGraphicsPipeline( true );
 		createCommandPool();
 		createCommandBuffer();
 		createSyncObjects();
@@ -208,20 +209,31 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	void Renderer::onShaderModification( const std::filesystem::path& _path )
 	{
+		std::lock_guard<std::mutex> guard( m_mutPipelineAccess );
+
 		std::filesystem::path outdir{ "./Shaders/Compiled" };
 		std::filesystem::path outfile{ outdir / _path.filename().concat( ".spv" ) };
 
-		RuntimeShaderCompiler::compile( _path, outfile );
+		if ( RuntimeShaderCompiler::compile( _path, outfile ) )
+		{
+			if ( m_GraphicsPipeline != VK_NULL_HANDLE )
+				vkDestroyPipeline( m_LogicalDevice, m_GraphicsPipeline, nullptr );
 
-		// Prob need to recreate pipeline here? Careful with thread too?
+			if ( m_PipelineLayout != VK_NULL_HANDLE )
+				vkDestroyPipelineLayout( m_LogicalDevice, m_PipelineLayout, nullptr );
+
+			createGraphicsPipeline( false );
+		}
 	}
 
 	//----------------------------------------------------------------------------------
-	void Renderer::createGraphicsPipeline()
+	void Renderer::createGraphicsPipeline( bool _compile )
 	{
-	
-		RuntimeShaderCompiler::compile( "./Shaders/main.vert", "./Shaders/Compiled/main.vert.spv" );
-		RuntimeShaderCompiler::compile( "./Shaders/main.frag", "./Shaders/Compiled/main.frag.spv" );
+		if ( _compile )
+		{
+			RuntimeShaderCompiler::compile( "./Shaders/main.vert", "./Shaders/Compiled/main.vert.spv" );
+			RuntimeShaderCompiler::compile( "./Shaders/main.frag", "./Shaders/Compiled/main.frag.spv" );
+		}
 
 		auto pVertShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "./Shaders/Compiled/main.vert.spv" ), m_LogicalDevice );
 		auto pFragShader = std::make_unique<Engine::ShaderModule>( std::filesystem::path( "./Shaders/Compiled/main.frag.spv" ), m_LogicalDevice );
@@ -445,6 +457,8 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	void Renderer::recordCommandBuffer( u32 _imageIndex )
 	{
+		std::lock_guard<std::mutex> guard( m_mutPipelineAccess );
+
 		VkCommandBufferBeginInfo beginInfo{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 			.pNext = nullptr,
