@@ -6,6 +6,11 @@
 
 #include <GLFW/glfw3.h>
 
+namespace Config {
+	inline u32 WINDOW_WIDTH = 1920;
+	inline u32 WINDOW_HEIGHT = 1080;
+}
+
 class Display {
 
 public:

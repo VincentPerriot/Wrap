@@ -6,12 +6,12 @@
 #include "../Platforms/Windows/Display.h"
 #include "../Engine/Renderer.h"
 
-class TriangleApp
+class ModelApp
 {
 public:
-	TriangleApp();
+	ModelApp();
 
-	~TriangleApp();
+	~ModelApp();
 
 	void run();
 
@@ -22,4 +22,3 @@ private:
 
 	std::unique_ptr<Engine::Renderer> m_pRenderer;
 };
-

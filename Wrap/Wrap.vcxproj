@@ -148,6 +148,8 @@
     <ClCompile Include="Engine\ShaderModule.cpp" />
     <ClCompile Include="Engine\SwapChain.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Maths\Vec3.cpp" />
+    <ClCompile Include="Warp\ModelApp.cpp" />
     <ClCompile Include="Platforms\Windows\Display.cpp" />
     <ClCompile Include="Utils\FileWatcher.cpp" />
     <ClCompile Include="Warp\TriangleApp.cpp" />
@@ -158,6 +160,8 @@
     <ClInclude Include="Engine\RuntimeShaderCompiler.h" />
     <ClInclude Include="Engine\ShaderModule.h" />
     <ClInclude Include="Engine\SwapChain.h" />
+    <ClInclude Include="Maths\Vec3.h" />
+    <ClInclude Include="Warp\ModelApp.h" />
     <ClInclude Include="Utils\FileWatcher.h" />
     <ClInclude Include="Warp\TriangleApp.h" />
     <ClInclude Include="Utils\Common.h" />
