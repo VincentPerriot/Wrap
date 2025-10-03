@@ -6,6 +6,7 @@ ModelApp::ModelApp()
 	Display::Instance( Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, "Vulkan" );
 }
 
+//--------------------------------------------------------------------
 ModelApp::~ModelApp()
 {
 

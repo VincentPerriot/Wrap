@@ -5,6 +5,7 @@
 
 #include "../Platforms/Windows/Display.h"
 #include "../Engine/Renderer.h"
+#include "../Engine/VulkanTypes.h"
 
 class ModelApp
 {

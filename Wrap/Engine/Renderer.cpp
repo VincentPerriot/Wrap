@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "ShaderModule.h"
 #include "RuntimeShaderCompiler.h"
+#include "VulkanTypes.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = true;
@@ -278,14 +279,17 @@ namespace Engine {
 			.pDynamicStates = dynamicStates.data()
 		};
 
+		auto bindingDesc = Vertex::getBindingDescrition();
+		auto attributeDesc = Vertex::getAttributesDescription();
+
 		VkPipelineVertexInputStateCreateInfo vertInputCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.vertexBindingDescriptionCount = 0,
-			.pVertexBindingDescriptions = nullptr,
-			.vertexAttributeDescriptionCount = 0,
-			.pVertexAttributeDescriptions = nullptr
+			.vertexBindingDescriptionCount = 1,
+			.pVertexBindingDescriptions = &bindingDesc,
+			.vertexAttributeDescriptionCount = (u32)attributeDesc.size(),
+			.pVertexAttributeDescriptions = attributeDesc.data()
 		};
 
 		VkPipelineInputAssemblyStateCreateInfo assemblyCreateInfo{
