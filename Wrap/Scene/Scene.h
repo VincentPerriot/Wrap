@@ -1,14 +1,55 @@
 #pragma once
-#pragma once
 
 #include "../Utils/Common.h"
+#include <unordered_map>
+#include <shared_mutex>
+
 #include "Mesh.h"
+#include "../Engine/Renderer.h"
 
 namespace Scene {
+
+	struct MeshHandle {
+		u32 m_Id;
+		bool m_Valid = { true };
+
+		bool isValid() { return m_Valid; };
+		void invalidate() { m_Valid = false; };
+
+		constexpr bool operator==( const MeshHandle& _other ) const
+		{
+			return m_Id == _other.m_Id && m_Valid == _other.m_Valid;
+		}
+	};
+
+	struct Camera {
+		Maths::Vector3 m_Pos;
+	};
+
 	class Scene
 	{
+	public:
+		MeshHandle AddMesh( const Mesh& _mesh );
+		void updateHandleToMeshIdx();
+
+		void translateMesh2D( MeshHandle _handle, const Maths::Vector2& _vector2 );
+
+		void RemoveMesh( MeshHandle _handle );
+		const Mesh* GetMesh( MeshHandle _handle );
+		const Mesh* GetMesh( std::string_view _name );
+
+		void SendToRender( Engine::Renderer& _renderer );
+
 	private:
-		std::array<Mesh, 4> geometry;
+		u32 m_NextMeshHandleId{ 0 };
+		std::vector<std::pair<MeshHandle, size_t>> m_HandleToMeshIdxMap;
+		std::vector<MeshHandle> m_MeshHandles;
+		std::vector<Mesh> m_MeshData;
+		Camera m_Camera;
+
+		//https://en.cppreference.com/w/cpp/thread/shared_mutex.html
+		// Call Shared lock on read and unique lock on write
+		mutable std::shared_mutex m_Mutex;
 	};
 
 } // end namespace Scene

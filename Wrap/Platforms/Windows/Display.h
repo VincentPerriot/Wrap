@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../Utils/Common.h"
-#include "../../Warp/TriangleApp.h"
 #include "../../Engine/SwapChain.h"
 
 #include <GLFW/glfw3.h>

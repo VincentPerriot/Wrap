@@ -1,5 +1,6 @@
 #include "SwapChain.h"
 #include "../Platforms/Windows/Display.h"
+#include "Debug.h"
 
 namespace Engine {
 	//------------------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 
 #include "../Utils/Common.h"
 #include "../Utils/FileWatcher.h"
+#include "../Scene/Mesh.h"
 
 #include "vulkan/vulkan.h"
 #include "SwapChain.h"
@@ -43,6 +44,7 @@ namespace Engine {
 		Renderer& operator=( Renderer&& ) = delete;
 
 		bool checkValidationSupport();
+		void loadMeshes( std::vector<Scene::Mesh> _meshes );
 
 		void drawFrames();
 
@@ -99,5 +101,7 @@ namespace Engine {
 		std::unique_ptr<FileWatcher> m_ShaderWatcher;
 
 		std::mutex m_mutPipelineAccess;
+
+		std::vector<Scene::Mesh> m_Meshes;
 	};
 } // End Namespace Engine

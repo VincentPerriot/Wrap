@@ -627,6 +627,12 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
+	void Renderer::loadMeshes( std::vector<Scene::Mesh> _meshes )
+	{
+		m_Meshes = _meshes;
+	}
+
+	//----------------------------------------------------------------------------------
 	void Renderer::drawFrames()
 	{
 		vkWaitForFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX );

@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Warp\ModelApp\AppScene.cpp" />
     <ClCompile Include="Engine\Renderer.cpp" />
     <ClCompile Include="Engine\RuntimeShaderCompiler.cpp" />
     <ClCompile Include="Engine\ShaderModule.cpp" />
@@ -156,12 +157,13 @@
     <ClCompile Include="Scene\PrimitiveMeshes\Quad.cpp" />
     <ClCompile Include="Scene\PrimitiveMeshes\Triangle.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
-    <ClCompile Include="Warp\ModelApp.cpp" />
     <ClCompile Include="Platforms\Windows\Display.cpp" />
     <ClCompile Include="Utils\FileWatcher.cpp" />
-    <ClCompile Include="Warp\TriangleApp.cpp" />
+    <ClCompile Include="Warp\ModelApp\ModelApp.cpp" />
+    <ClCompile Include="Warp\TriangleApp\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Warp\ModelApp\AppScene.h" />
     <ClInclude Include="Engine\Debug.h" />
     <ClInclude Include="Engine\Renderer.h" />
     <ClInclude Include="Engine\RuntimeShaderCompiler.h" />
@@ -176,11 +178,11 @@
     <ClInclude Include="Scene\PrimitiveMeshes\Quad.h" />
     <ClInclude Include="Scene\PrimitiveMeshes\Triangle.h" />
     <ClInclude Include="Scene\Scene.h" />
-    <ClInclude Include="Warp\ModelApp.h" />
     <ClInclude Include="Utils\FileWatcher.h" />
-    <ClInclude Include="Warp\TriangleApp.h" />
     <ClInclude Include="Utils\Common.h" />
     <ClInclude Include="Platforms\Windows\Display.h" />
+    <ClInclude Include="Warp\ModelApp\ModelApp.h" />
+    <ClInclude Include="Warp\TriangleApp\TriangleApp.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\main.frag" />

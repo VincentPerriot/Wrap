@@ -6,14 +6,14 @@
 #include "Platforms/Windows/Display.h"
 #include "Utils/Common.h"
 
-#include "Warp/TriangleApp.h"
-#include "Warp/ModelApp.h"
+#include "Warp/TriangleApp/TriangleApp.h"
+#include "Warp/ModelApp/ModelApp.h"
 
 #include "Engine/RuntimeShaderCompiler.h"
 
 int main() {
 
-	std::unique_ptr<ModelApp> app = std::make_unique<ModelApp>();
+	std::unique_ptr<App::ModelApp::ModelApp> app = std::make_unique<App::ModelApp::ModelApp>();
 
 	app->run();
 

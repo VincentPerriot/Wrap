@@ -21,9 +21,6 @@
     <ClCompile Include="Platforms\Windows\Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Warp\TriangleApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\FileWatcher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Warp\ModelApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Maths\Vector3.cpp">
@@ -66,15 +60,21 @@
     <ClCompile Include="Scene\PrimitiveMeshes\Quad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Warp\TriangleApp\TriangleApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Warp\ModelApp\ModelApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Warp\ModelApp\AppScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platforms\Windows\Display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Warp\TriangleApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Renderer.h">
@@ -93,9 +93,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\FileWatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Warp\ModelApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Maths\Vector3.h">
@@ -123,6 +120,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Scene\PrimitiveMeshes\Cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Warp\TriangleApp\TriangleApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Warp\ModelApp\ModelApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Warp\ModelApp\AppScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
