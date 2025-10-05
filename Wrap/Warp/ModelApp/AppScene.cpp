@@ -28,7 +28,7 @@ void App::ModelApp::AppScene::addGeometry()
 	if ( m_Triangle2.isValid() )
 		translateMesh2D( m_Triangle2, vec2 );
 
-	SendToRender( m_Renderer );
+	RendererUpdateMeshes( m_Renderer );
 }
 
 //--------------------------------------------------------------------------------
@@ -41,12 +41,15 @@ void App::ModelApp::AppScene::start()
 //--------------------------------------------------------------------------------
 void App::ModelApp::AppScene::update()
 {
-	//auto  now = std::chrono::steady_clock::now();
-	//auto delta = std::chrono::duration_cast<std::chrono::milliseconds>( now - m_LastTimeUpdate );
-	//m_LastTimeUpdate = now;
-	//m_SceneTime += ( delta.count() / 1000.0 );
+	auto now = std::chrono::steady_clock::now();
+	std::chrono::duration<f32> delta = now - m_LastTimeUpdate;
 
-	//if ( m_SceneTime > 20.0f )
-	//	RemoveMesh( m_Triangle2 );
+	m_LastTimeUpdate = now;
+	m_SceneTime += delta.count();
 
+	if ( m_SceneTime > 5.0f && m_RemoveTest )
+	{
+		RemoveMesh( m_Triangle2, m_Renderer );
+		m_RemoveTest = false;
+	}
 }

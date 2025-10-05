@@ -34,11 +34,11 @@ namespace Scene {
 
 		void translateMesh2D( MeshHandle _handle, const Maths::Vector2& _vector2 );
 
-		void RemoveMesh( MeshHandle _handle );
+		void RemoveMesh( MeshHandle _handle, Engine::Renderer& _renderer );
 		Mesh* GetMesh( MeshHandle _handle );
 		Mesh* GetMesh( std::string_view _name );
 
-		void SendToRender( Engine::Renderer& _renderer );
+		void RendererUpdateMeshes( Engine::Renderer& _renderer );
 
 	private:
 		u32 m_NextMeshHandleId{ 0 };

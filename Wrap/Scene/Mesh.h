@@ -12,7 +12,8 @@ namespace Scene {
 		Mesh( std::string_view _name );
 		virtual ~Mesh();
 
-		// Todo remove the non const getters later and organise a proper transform interface
+		bool operator==( const Mesh& _other ) const { return m_Name == _other.m_Name; };
+
 		std::vector<Engine::Vertex>& getVertices() { return m_Vertices; };
 		const std::vector<Engine::Vertex>& getVertices() const { return m_Vertices; };
 

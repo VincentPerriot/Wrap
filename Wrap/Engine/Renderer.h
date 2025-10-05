@@ -45,6 +45,7 @@ namespace Engine {
 
 		bool checkValidationSupport();
 		void loadMeshes( std::vector<Scene::Mesh> _meshes );
+		void removeMesh( Scene::Mesh& _mesh );
 
 		void drawFrames();
 

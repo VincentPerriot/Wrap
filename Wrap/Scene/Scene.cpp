@@ -49,24 +49,26 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	void Scene::RemoveMesh( MeshHandle _handle )
+	void Scene::RemoveMesh( MeshHandle _handle, Engine::Renderer& _renderer )
 	{
 		std::unique_lock<std::shared_mutex> lock( m_Mutex );
-		auto handlePos = std::ranges::find( m_MeshHandles, _handle );
-		auto pos = std::ranges::find_if( m_HandleToMeshIdxMap, [&]( const auto& _pairing ) { return _pairing.first == _handle; } );
 
-		bool process = pos != m_HandleToMeshIdxMap.end() && handlePos != m_MeshHandles.end();
+
+		auto handleIt = std::ranges::find( m_MeshHandles, _handle );
+		auto it = std::ranges::find_if( m_HandleToMeshIdxMap, [&]( const auto& _pairing ) { return _pairing.first == _handle; } );
+
+		bool process = it != m_HandleToMeshIdxMap.end() && handleIt != m_MeshHandles.end();
 		assert( process );
 
-		if ( pos != m_HandleToMeshIdxMap.end() )
+		if ( it != m_HandleToMeshIdxMap.end() )
 		{
-			auto idx = pos->second;
-
+			auto idx = it->second;
 			process = process && idx < m_MeshData.size();
 			assert( process );
-
 			if ( process )
 			{
+				_renderer.removeMesh( m_MeshData[idx] );
+
 				if ( idx < ( m_MeshData.size() - 1 ) )
 				{
 					std::swap( m_MeshData.at( idx ), m_MeshData.back() );
@@ -74,10 +76,9 @@ namespace Scene {
 
 				m_MeshData.pop_back();
 				m_HandleToMeshIdxMap.back().second = idx;
-
-				handlePos->invalidate();
-
+				handleIt->invalidate();
 				updateHandleToMeshIdx();
+
 			}
 		}
 	}
@@ -123,7 +124,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	void Scene::SendToRender( Engine::Renderer& _renderer )
+	void Scene::RendererUpdateMeshes( Engine::Renderer& _renderer )
 	{
 		std::shared_lock<std::shared_mutex> lock( m_Mutex );
 		_renderer.loadMeshes( m_MeshData );

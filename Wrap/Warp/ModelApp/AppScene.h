@@ -26,6 +26,8 @@ namespace App::ModelApp
 		f32 m_SceneTime{ 0.0f };
 		std::chrono::time_point<std::chrono::steady_clock> m_LastTimeUpdate;
 		Engine::Renderer& m_Renderer;
+
+		bool m_RemoveTest{ true };
 	};
 } // end namespace App::ModelApp
 

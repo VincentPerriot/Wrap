@@ -663,6 +663,23 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
+	void Renderer::removeMesh( Scene::Mesh& _mesh )
+	{
+		auto it = std::ranges::find( m_Meshes, _mesh );
+		if ( it != m_Meshes.end() )
+		{
+			auto index = (size_t)std::distance( m_Meshes.begin(), it );
+
+			vkFreeMemory( m_LogicalDevice, m_VertexBuffersMemory[index], nullptr );
+			vkDestroyBuffer( m_LogicalDevice, m_VertexBuffers[index], nullptr );
+
+			m_Meshes.erase( m_Meshes.begin() + index );
+			m_VertexBuffers.erase( m_VertexBuffers.begin() + index );
+			m_VertexBuffersMemory.erase( m_VertexBuffersMemory.begin() + index );
+		}
+	}
+
+	//----------------------------------------------------------------------------------
 	void Renderer::drawFrames()
 	{
 		vkWaitForFences( m_LogicalDevice, 1, &m_inFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX );
