@@ -103,5 +103,7 @@ namespace Engine {
 		std::mutex m_mutPipelineAccess;
 
 		std::vector<Scene::Mesh> m_Meshes;
+		std::vector<VkBuffer> m_VertexBuffers;
+		std::vector<VkDeviceMemory> m_VertexBuffersMemory;
 	};
 } // End Namespace Engine

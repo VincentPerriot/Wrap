@@ -5,7 +5,7 @@
 Scene::Primitives::Triangle::Triangle( std::string_view _name )
 	: Mesh( _name )
 {
-
+	setVertices();
 }
 
 //--------------------------------------------------------------------

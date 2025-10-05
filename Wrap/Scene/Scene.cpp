@@ -23,7 +23,6 @@ namespace Scene {
 	//--------------------------------------------------------------------
 	void Scene::updateHandleToMeshIdx()
 	{
-		std::unique_lock<std::shared_mutex> lock( m_Mutex );
 		m_HandleToMeshIdxMap.clear();
 
 		size_t meshIdx = 0;
@@ -74,6 +73,8 @@ namespace Scene {
 				}
 
 				m_MeshData.pop_back();
+				m_HandleToMeshIdxMap.back().second = idx;
+
 				handlePos->invalidate();
 
 				updateHandleToMeshIdx();
@@ -82,7 +83,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	const Mesh* Scene::GetMesh( std::string_view _name )
+	Mesh* Scene::GetMesh( std::string_view _name )
 	{
 		std::shared_lock<std::shared_mutex> lock( m_Mutex );
 		auto pos = std::ranges::find_if( m_MeshData, [&]( const auto& _mesh ) { return _mesh.getName() == _name; } );
@@ -99,7 +100,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	const Mesh* Scene::GetMesh( MeshHandle _handle )
+	Mesh* Scene::GetMesh( MeshHandle _handle )
 	{
 		std::shared_lock<std::shared_mutex> lock( m_Mutex );
 		auto pos = std::ranges::find_if( m_HandleToMeshIdxMap, [&]( const auto& _pairing ) { return _pairing.first == _handle; } );

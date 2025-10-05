@@ -11,17 +11,21 @@ namespace App::ModelApp
 	class AppScene : Scene::Scene
 	{
 	public:
-		AppScene();
+		AppScene( Engine::Renderer& _renderer );
 		~AppScene();
 
 		void start();
-		void update( Engine::Renderer& _renderer );
+		void update();
 
 	private:
 		void addGeometry();
 
 		::Scene::MeshHandle m_Triangle1;
 		::Scene::MeshHandle m_Triangle2;
+
+		f32 m_SceneTime{ 0.0f };
+		std::chrono::time_point<std::chrono::steady_clock> m_LastTimeUpdate;
+		Engine::Renderer& m_Renderer;
 	};
 } // end namespace App::ModelApp
 

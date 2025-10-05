@@ -35,8 +35,8 @@ namespace Scene {
 		void translateMesh2D( MeshHandle _handle, const Maths::Vector2& _vector2 );
 
 		void RemoveMesh( MeshHandle _handle );
-		const Mesh* GetMesh( MeshHandle _handle );
-		const Mesh* GetMesh( std::string_view _name );
+		Mesh* GetMesh( MeshHandle _handle );
+		Mesh* GetMesh( std::string_view _name );
 
 		void SendToRender( Engine::Renderer& _renderer );
 
@@ -47,8 +47,6 @@ namespace Scene {
 		std::vector<Mesh> m_MeshData;
 		Camera m_Camera;
 
-		//https://en.cppreference.com/w/cpp/thread/shared_mutex.html
-		// Call Shared lock on read and unique lock on write
 		mutable std::shared_mutex m_Mutex;
 	};
 

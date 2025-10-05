@@ -17,6 +17,7 @@ namespace App::ModelApp {
 	void ModelApp::run()
 	{
 		initVulkan();
+		createScene();
 
 		mainLoop();
 	}
@@ -34,8 +35,7 @@ namespace App::ModelApp {
 		while ( !Display::Instance().shouldClose() )
 		{
 			Display::Instance().pollEvents();
-			m_AppScene->update( *m_pRenderer );
-
+			m_AppScene->update();
 			m_pRenderer->drawFrames();
 		}
 	}
@@ -43,6 +43,6 @@ namespace App::ModelApp {
 	//--------------------------------------------------------------------
 	void ModelApp::createScene()
 	{
-		m_AppScene = std::make_unique<AppScene>();
+		m_AppScene = std::make_unique<AppScene>( *m_pRenderer );
 	}
 } // end namespace App::ModelApp

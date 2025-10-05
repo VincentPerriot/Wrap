@@ -2,6 +2,8 @@
 #include "ShaderModule.h"
 #include "RuntimeShaderCompiler.h"
 #include "VulkanTypes.h"
+#include "VulkanMemory.h"
+#include "../Utils/Utils.h"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = true;
@@ -20,19 +22,22 @@ namespace Engine {
 	{
 		vkDeviceWaitIdle( m_LogicalDevice );
 
+		for ( size_t i = 0; i < m_VertexBuffers.size(); i++ )
+		{
+			vkDestroyBuffer( m_LogicalDevice, m_VertexBuffers[i], nullptr );
+		}
+		for ( size_t i = 0; i < m_VertexBuffersMemory.size(); i++ )
+		{
+			vkFreeMemory( m_LogicalDevice, m_VertexBuffersMemory[i], nullptr );
+		}
+
 		vkDestroyPipeline( m_LogicalDevice, m_GraphicsPipeline, nullptr );
 		vkDestroyPipelineLayout( m_LogicalDevice, m_PipelineLayout, nullptr );
 		m_Swapchain.reset();
 
-		vkDestroyDevice( m_LogicalDevice, nullptr );
-
 		if ( enableValidationLayers )
 			destroyDebugUtilsMessenger( m_Instance, m_DebugMessenger, nullptr );
 
-		m_PhysicalDevice = VK_NULL_HANDLE;
-
-		vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
-		vkDestroyInstance( m_Instance, nullptr );
 		vkDestroyCommandPool( m_LogicalDevice, m_CommandPool, nullptr );
 
 		for ( size_t i = 0; i < FRAMES_IN_FLIGHT; i++ )
@@ -41,6 +46,13 @@ namespace Engine {
 			vkDestroySemaphore( m_LogicalDevice, m_RenderFinishedSemaphores[i], nullptr );
 			vkDestroyFence( m_LogicalDevice, m_inFlightFences[i], nullptr );
 		}
+
+		vkDestroyDevice( m_LogicalDevice, nullptr );
+
+		vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
+		vkDestroyInstance( m_Instance, nullptr );
+
+		m_PhysicalDevice = VK_NULL_HANDLE;
 
 		m_ShaderWatcher.reset();
 	}
@@ -517,7 +529,14 @@ namespace Engine {
 		};
 		vkCmdSetScissor( m_CommandBuffers[m_CurrentFrame], 0, 1, &scissor );
 
-		vkCmdDraw( m_CommandBuffers[m_CurrentFrame], 3, 1, 0, 0 );
+		for ( size_t i = 0; i < m_Meshes.size(); i++ )
+		{
+			std::vector<VkDeviceSize> offsets( m_Meshes.size() );
+			vkCmdBindVertexBuffers( m_CommandBuffers[m_CurrentFrame], 0, 1, &m_VertexBuffers[i], offsets.data() );
+
+			u32 vertCount = Utils::getMeshVerticesCount( m_Meshes[i] );
+			vkCmdDraw( m_CommandBuffers[m_CurrentFrame], vertCount, 1, 0, 0 );
+		}
 
 		vkCmdEndRenderPass( m_CommandBuffers[m_CurrentFrame] );
 		VK_ASSERT( vkEndCommandBuffer( m_CommandBuffers[m_CurrentFrame] ) );
@@ -630,6 +649,17 @@ namespace Engine {
 	void Renderer::loadMeshes( std::vector<Scene::Mesh> _meshes )
 	{
 		m_Meshes = _meshes;
+
+		size_t numMeshes = m_Meshes.size();
+		m_VertexBuffers.resize( numMeshes );
+		m_VertexBuffersMemory.resize( numMeshes );
+
+		for ( size_t i = 0; i < numMeshes; i++ )
+		{
+			VulkanMemory::createEmptyMeshVertexBuffer( m_LogicalDevice, m_Meshes[i], m_VertexBuffers[i] );
+			VulkanMemory::createBufferMemory( m_PhysicalDevice, m_LogicalDevice, m_VertexBuffers[i], m_VertexBuffersMemory[i] );
+			VulkanMemory::fillMeshVertexBuffer( m_LogicalDevice, m_Meshes[i], m_VertexBuffers[i], m_VertexBuffersMemory[i] );
+		}
 	}
 
 	//----------------------------------------------------------------------------------

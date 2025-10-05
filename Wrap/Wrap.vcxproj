@@ -143,6 +143,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\VulkanMemory.cpp" />
+    <ClCompile Include="Utils\Utils.cpp" />
     <ClCompile Include="Warp\ModelApp\AppScene.cpp" />
     <ClCompile Include="Engine\Renderer.cpp" />
     <ClCompile Include="Engine\RuntimeShaderCompiler.cpp" />
@@ -163,6 +165,8 @@
     <ClCompile Include="Warp\TriangleApp\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\VulkanMemory.h" />
+    <ClInclude Include="Utils\Utils.h" />
     <ClInclude Include="Warp\ModelApp\AppScene.h" />
     <ClInclude Include="Engine\Debug.h" />
     <ClInclude Include="Engine\Renderer.h" />
