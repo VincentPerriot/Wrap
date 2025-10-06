@@ -17,8 +17,8 @@ namespace Scene {
 		std::vector<Engine::Vertex>& getVertices() { return m_Vertices; };
 		const std::vector<Engine::Vertex>& getVertices() const { return m_Vertices; };
 
-		std::vector<u32>& getIndices() { return m_Indices; };
-		const std::vector<u32>& getIndices() const { return m_Indices; };
+		std::vector<u16>& getIndices() { return m_Indices; };
+		const std::vector<u16>& getIndices() const { return m_Indices; };
 
 		constexpr std::string getName() const { return m_Name; };
 
@@ -28,6 +28,6 @@ namespace Scene {
 
 		std::string m_Name;
 		std::vector<Engine::Vertex> m_Vertices{};
-		std::vector<u32> m_Indices{};
+		std::vector<u16> m_Indices{};
 	};
 } // end namespace Scene

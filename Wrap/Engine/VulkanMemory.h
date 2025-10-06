@@ -9,12 +9,12 @@ namespace Engine {
 	{
 	public:
 		// Specific to Vertex Buffers
-		static void createEmptyMeshVertexBuffer( VkDevice _device, const Scene::Mesh& _mesh, VkBuffer& _vertexBuffer );
-		static void fillMeshVertexBuffer( VkDevice _device, const Scene::Mesh& _mesh, VkBuffer& _vertexBuffer, VkDeviceMemory& _deviceMem );
+		static void createMeshVertexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue );
 
 		// Generic
-		static void createBufferMemory( VkPhysicalDevice _physicalDevice, VkDevice _device, VkBuffer& _buffer, VkDeviceMemory& _deviceMem );
+		static void createBuffer( VkDevice _device, VkPhysicalDevice _physDevice, VkDeviceSize _size, VkBufferUsageFlags _usage, VkMemoryPropertyFlags _properties, VkBuffer& _buffer, VkDeviceMemory& _memory );
 		static u32 findMemoryType( VkPhysicalDevice _physicalDevice, u32 _typeFilter, VkMemoryPropertyFlags _props );
+		static void copyBuffer( VkDevice _device, VkBuffer _source, VkBuffer _dest, VkDeviceSize _size, VkCommandPool _pool, VkQueue _queue );
 	};
 
 } // end namespace Engine

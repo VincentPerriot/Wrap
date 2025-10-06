@@ -6,7 +6,9 @@ namespace Scene {
 
 		class Quad : public Mesh
 		{
-			using Mesh::Mesh;
+		public:
+			Quad( std::string_view _name );
+			~Quad();
 
 			virtual void setVertices() override;
 			virtual void setIndices() override;

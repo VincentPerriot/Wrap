@@ -656,9 +656,8 @@ namespace Engine {
 
 		for ( size_t i = 0; i < numMeshes; i++ )
 		{
-			VulkanMemory::createEmptyMeshVertexBuffer( m_LogicalDevice, m_Meshes[i], m_VertexBuffers[i] );
-			VulkanMemory::createBufferMemory( m_PhysicalDevice, m_LogicalDevice, m_VertexBuffers[i], m_VertexBuffersMemory[i] );
-			VulkanMemory::fillMeshVertexBuffer( m_LogicalDevice, m_Meshes[i], m_VertexBuffers[i], m_VertexBuffersMemory[i] );
+			VulkanMemory::createMeshVertexBuffer( m_LogicalDevice, m_PhysicalDevice, m_Meshes[i], m_VertexBuffers[i],
+				m_VertexBuffersMemory[i], m_CommandPool, m_GraphicsQueue );
 		}
 	}
 
