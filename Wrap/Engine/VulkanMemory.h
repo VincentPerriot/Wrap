@@ -10,6 +10,7 @@ namespace Engine {
 	public:
 		// Specific to Vertex Buffers
 		static void createMeshVertexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue );
+		static void createMeshIndexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue );
 
 		// Generic
 		static void createBuffer( VkDevice _device, VkPhysicalDevice _physDevice, VkDeviceSize _size, VkBufferUsageFlags _usage, VkMemoryPropertyFlags _properties, VkBuffer& _buffer, VkDeviceMemory& _memory );

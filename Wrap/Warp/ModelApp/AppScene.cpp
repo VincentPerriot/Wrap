@@ -17,22 +17,22 @@ App::ModelApp::AppScene::~AppScene()
 //--------------------------------------------------------------------------------
 void App::ModelApp::AppScene::addGeometry()
 {
-	m_Triangle1 = AddMesh( ::Scene::Primitives::Triangle( "Tri_1" ) );
+	m_Quad1 = AddMesh( ::Scene::Primitives::Quad( "Quad_1" ) );
 	m_Triangle2 = AddMesh( ::Scene::Primitives::Triangle( "Tri_2" ) );
-	m_Triangle3 = AddMesh( ::Scene::Primitives::Triangle( "Tri_3" ) );
+	m_Quad3 = AddMesh( ::Scene::Primitives::Quad( "Quad_3" ) );
 	m_Triangle4 = AddMesh( ::Scene::Primitives::Triangle( "Tri_4" ) );
 
 	Maths::Vector2 vec1{ 0.4f, 0.4f };
-	if ( m_Triangle1.isValid() )
-		translateMesh2D( m_Triangle1, vec1 );
+	if ( m_Quad1.isValid() )
+		translateMesh2D( m_Quad1, vec1 );
 
 	Maths::Vector2 vec2{ -0.4f, -0.4f };
 	if ( m_Triangle2.isValid() )
 		translateMesh2D( m_Triangle2, vec2 );
 
 	Maths::Vector2 vec3{ -0.4f, 0.4f };
-	if ( m_Triangle3.isValid() )
-		translateMesh2D( m_Triangle3, vec3 );
+	if ( m_Quad3.isValid() )
+		translateMesh2D( m_Quad3, vec3 );
 
 	Maths::Vector2 vec4{ 0.4f, -0.4f };
 	if ( m_Triangle4.isValid() )
@@ -65,7 +65,7 @@ void App::ModelApp::AppScene::update()
 
 	if ( m_SceneTime > 10.0f && m_RemoveTest2 )
 	{
-		RemoveMesh( m_Triangle1, m_Renderer );
+		RemoveMesh( m_Quad1, m_Renderer );
 		m_RemoveTest2 = false;
 	}
 

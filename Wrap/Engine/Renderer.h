@@ -66,6 +66,8 @@ namespace Engine {
 
 		void onShaderModification( const std::filesystem::path& _path );
 
+		void destroyBuffersFreeMemory();
+
 		QueueFamilyIndices findQueueFamilies();
 
 		VkResult createDebugUtilsMessenger( VkInstance _instance, const VkDebugUtilsMessengerCreateInfoEXT* _createInfo,
@@ -105,6 +107,8 @@ namespace Engine {
 
 		std::vector<Scene::Mesh> m_Meshes;
 		std::vector<VkBuffer> m_VertexBuffers;
+		std::vector<VkBuffer> m_IndexBuffers;
 		std::vector<VkDeviceMemory> m_VertexBuffersMemory;
+		std::vector<VkDeviceMemory> m_IndexBuffersMemory;
 	};
 } // End Namespace Engine

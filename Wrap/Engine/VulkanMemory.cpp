@@ -58,6 +58,30 @@ namespace Engine {
 	}
 
 	//------------------------------------------------------------------------------------
+	void VulkanMemory::createMeshIndexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue )
+	{
+		VkDeviceSize size = sizeof( u16 ) * _mesh.getIndices().size();
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingMemory;
+		createBuffer( _device, _physDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory );
+
+		void* data;
+		VK_ASSERT( vkMapMemory( _device, stagingMemory, 0, size, 0, &data ) );
+		memcpy( data, _mesh.getIndices().data(), (size_t)size );
+		vkUnmapMemory( _device, stagingMemory );
+
+		createBuffer( _device, _physDevice, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _buffer, _memory );
+
+		copyBuffer( _device, stagingBuffer, _buffer, size, _pool, _queue );
+
+		vkDestroyBuffer( _device, stagingBuffer, nullptr );
+		vkFreeMemory( _device, stagingMemory, nullptr );
+	}
+
+	//------------------------------------------------------------------------------------
 	u32 VulkanMemory::findMemoryType( VkPhysicalDevice _physicalDevice, u32 _typeFilter, VkMemoryPropertyFlags _props )
 	{
 		VkPhysicalDeviceMemoryProperties memProps;
@@ -72,6 +96,8 @@ namespace Engine {
 				return i;
 			}
 		}
+
+		return 0;
 	}
 
 	//------------------------------------------------------------------------------------

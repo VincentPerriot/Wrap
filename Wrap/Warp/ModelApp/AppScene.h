@@ -20,9 +20,9 @@ namespace App::ModelApp
 	private:
 		void addGeometry();
 
-		::Scene::MeshHandle m_Triangle1;
+		::Scene::MeshHandle m_Quad1;
 		::Scene::MeshHandle m_Triangle2;
-		::Scene::MeshHandle m_Triangle3;
+		::Scene::MeshHandle m_Quad3;
 		::Scene::MeshHandle m_Triangle4;
 
 		f32 m_SceneTime{ 0.0f };

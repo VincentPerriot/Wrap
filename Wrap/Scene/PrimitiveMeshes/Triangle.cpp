@@ -6,6 +6,7 @@ Scene::Primitives::Triangle::Triangle( std::string_view _name )
 	: Mesh( _name )
 {
 	setVertices();
+	setIndices();
 }
 
 //--------------------------------------------------------------------
@@ -27,5 +28,5 @@ void Scene::Primitives::Triangle::setVertices()
 //--------------------------------------------------------------------
 void Scene::Primitives::Triangle::setIndices()
 {
-
+	m_Indices = { 0, 1, 2 };
 }

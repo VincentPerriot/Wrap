@@ -22,14 +22,7 @@ namespace Engine {
 	{
 		vkDeviceWaitIdle( m_LogicalDevice );
 
-		for ( size_t i = 0; i < m_VertexBuffers.size(); i++ )
-		{
-			vkDestroyBuffer( m_LogicalDevice, m_VertexBuffers[i], nullptr );
-		}
-		for ( size_t i = 0; i < m_VertexBuffersMemory.size(); i++ )
-		{
-			vkFreeMemory( m_LogicalDevice, m_VertexBuffersMemory[i], nullptr );
-		}
+		destroyBuffersFreeMemory();
 
 		vkDestroyPipeline( m_LogicalDevice, m_GraphicsPipeline, nullptr );
 		vkDestroyPipelineLayout( m_LogicalDevice, m_PipelineLayout, nullptr );
@@ -533,9 +526,10 @@ namespace Engine {
 		{
 			std::vector<VkDeviceSize> offsets( m_Meshes.size() );
 			vkCmdBindVertexBuffers( m_CommandBuffers[m_CurrentFrame], 0, 1, &m_VertexBuffers[i], offsets.data() );
+			vkCmdBindIndexBuffer( m_CommandBuffers[m_CurrentFrame], m_IndexBuffers[i], 0, VK_INDEX_TYPE_UINT16 );
 
-			u32 vertCount = Utils::getMeshVerticesCount( m_Meshes[i] );
-			vkCmdDraw( m_CommandBuffers[m_CurrentFrame], vertCount, 1, 0, 0 );
+			u32 indexCount = static_cast<u32>( m_Meshes[i].getIndices().size() );
+			vkCmdDrawIndexed( m_CommandBuffers[m_CurrentFrame], indexCount, 1, 0, 0, 0 );
 		}
 
 		vkCmdEndRenderPass( m_CommandBuffers[m_CurrentFrame] );
@@ -652,12 +646,16 @@ namespace Engine {
 
 		size_t numMeshes = m_Meshes.size();
 		m_VertexBuffers.resize( numMeshes );
+		m_IndexBuffers.resize( numMeshes );
 		m_VertexBuffersMemory.resize( numMeshes );
+		m_IndexBuffersMemory.resize( numMeshes );
 
 		for ( size_t i = 0; i < numMeshes; i++ )
 		{
 			VulkanMemory::createMeshVertexBuffer( m_LogicalDevice, m_PhysicalDevice, m_Meshes[i], m_VertexBuffers[i],
 				m_VertexBuffersMemory[i], m_CommandPool, m_GraphicsQueue );
+			VulkanMemory::createMeshIndexBuffer( m_LogicalDevice, m_PhysicalDevice, m_Meshes[i], m_IndexBuffers[i],
+				m_IndexBuffersMemory[i], m_CommandPool, m_GraphicsQueue );
 		}
 	}
 
@@ -671,10 +669,14 @@ namespace Engine {
 
 			vkFreeMemory( m_LogicalDevice, m_VertexBuffersMemory[index], nullptr );
 			vkDestroyBuffer( m_LogicalDevice, m_VertexBuffers[index], nullptr );
+			vkFreeMemory( m_LogicalDevice, m_IndexBuffersMemory[index], nullptr );
+			vkDestroyBuffer( m_LogicalDevice, m_IndexBuffers[index], nullptr );
 
 			m_Meshes.erase( m_Meshes.begin() + index );
 			m_VertexBuffers.erase( m_VertexBuffers.begin() + index );
 			m_VertexBuffersMemory.erase( m_VertexBuffersMemory.begin() + index );
+			m_IndexBuffers.erase( m_IndexBuffers.begin() + index );
+			m_IndexBuffersMemory.erase( m_IndexBuffersMemory.begin() + index );
 		}
 	}
 
@@ -733,6 +735,27 @@ namespace Engine {
 		vkQueuePresentKHR( m_PresentQueue, &presentInfo );
 
 		m_CurrentFrame = ( m_CurrentFrame + 1 ) % FRAMES_IN_FLIGHT;
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::destroyBuffersFreeMemory()
+	{
+		for ( size_t i = 0; i < m_VertexBuffers.size(); i++ )
+		{
+			vkDestroyBuffer( m_LogicalDevice, m_VertexBuffers[i], nullptr );
+		}
+		for ( size_t i = 0; i < m_VertexBuffersMemory.size(); i++ )
+		{
+			vkFreeMemory( m_LogicalDevice, m_VertexBuffersMemory[i], nullptr );
+		}
+		for ( size_t i = 0; i < m_IndexBuffers.size(); i++ )
+		{
+			vkDestroyBuffer( m_LogicalDevice, m_IndexBuffers[i], nullptr );
+		}
+		for ( size_t i = 0; i < m_IndexBuffersMemory.size(); i++ )
+		{
+			vkFreeMemory( m_LogicalDevice, m_IndexBuffersMemory[i], nullptr );
+		}
 	}
 
 	//----------------------------------------------------------------------------------
