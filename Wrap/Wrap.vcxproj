@@ -112,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.3.290.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,7 +131,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.3.290.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,7 +144,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\VulkanMemory.cpp" />
-    <ClCompile Include="Utils\Utils.cpp" />
+    <ClCompile Include="Maths\Matrix4.cpp" />
+    <ClCompile Include="Scene\Transforms.cpp" />
+    <ClCompile Include="Utils\UnitConvert.cpp" />
     <ClCompile Include="Warp\ModelApp\AppScene.cpp" />
     <ClCompile Include="Engine\Renderer.cpp" />
     <ClCompile Include="Engine\RuntimeShaderCompiler.cpp" />
@@ -166,7 +168,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\VulkanMemory.h" />
-    <ClInclude Include="Utils\Utils.h" />
+    <ClInclude Include="Maths\Matrix4.h" />
+    <ClInclude Include="Scene\Transforms.h" />
+    <ClInclude Include="Utils\UnitConvert.h" />
     <ClInclude Include="Warp\ModelApp\AppScene.h" />
     <ClInclude Include="Engine\Debug.h" />
     <ClInclude Include="Engine\Renderer.h" />

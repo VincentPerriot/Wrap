@@ -72,7 +72,13 @@
     <ClCompile Include="Engine\VulkanMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\Utils.cpp">
+    <ClCompile Include="Scene\Transforms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\Matrix4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\UnitConvert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -140,7 +146,13 @@
     <ClInclude Include="Engine\VulkanMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\Utils.h">
+    <ClInclude Include="Scene\Transforms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\Matrix4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\UnitConvert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

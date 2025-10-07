@@ -17,3 +17,5 @@ using u32 = std::uint32_t;
 using u64 = std::uint64_t;
 using f32 = float;
 using f64 = double;
+
+constexpr f32 PI = 3.14159265f;
