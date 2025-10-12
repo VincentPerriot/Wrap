@@ -45,7 +45,7 @@
     <ClCompile Include="Maths\Vector4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Scene.cpp">
+    <ClCompile Include="Scene\BaseScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Mesh.cpp">
@@ -72,13 +72,16 @@
     <ClCompile Include="Engine\VulkanMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Transforms.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Maths\Matrix4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\UnitConvert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Maths\LinAlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\UniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,7 +122,7 @@
     <ClInclude Include="Engine\VulkanTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\Scene.h">
+    <ClInclude Include="Scene\BaseScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Mesh.h">
@@ -146,13 +149,19 @@
     <ClInclude Include="Engine\VulkanMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\Transforms.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Maths\Matrix4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\UnitConvert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\LinAlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\UniformBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\VulkanConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

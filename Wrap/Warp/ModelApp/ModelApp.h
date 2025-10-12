@@ -6,10 +6,14 @@
 #include "../../Platforms/Windows/Display.h"
 #include "../../Engine/Renderer.h"
 #include "../../Engine/VulkanTypes.h"
-#include "../../Scene/Scene.h"
+#include "../../Scene/BaseScene.h"
 #include "AppScene.h"
 
 namespace App {
+
+	static constexpr f32 FOV = 45.0f;
+	static constexpr f32 NEAR_CLIP = 0.1f;
+	static constexpr f32 FAR_CLIP = 10.0f;
 
 	namespace ModelApp
 	{

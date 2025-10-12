@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vulkan/vulkan_core.h"
-#include "../Scene/Scene.h"
+#include "../Scene/BaseScene.h"
 
 namespace Engine {
 

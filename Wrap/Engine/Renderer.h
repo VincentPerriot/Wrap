@@ -11,6 +11,8 @@
 #include "SwapChain.h"
 #include "GLFW/glfw3.h"
 #include "Debug.h"
+#include "UniformBuffer.h"
+#include "VulkanConstants.h"
 
 namespace Engine {
 
@@ -21,8 +23,6 @@ namespace Engine {
 	constexpr std::array<const char*, 1 > device_extensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
-
-	constexpr u32 FRAMES_IN_FLIGHT = 2;
 
 	struct QueueFamilyIndices {
 		std::optional<u32> m_Graphics;
@@ -49,6 +49,9 @@ namespace Engine {
 
 		void drawFrames();
 
+		void updateCameraUBO( Maths::Matrix4 _view, f32 _fov, f32 _near, f32 _far );
+		void updateModelUBOs( size_t _pos, Maths::Matrix4 _model );
+
 		// Temporary only running on GLFW
 		void init( GLFWwindow* _pWindow );
 
@@ -57,6 +60,9 @@ namespace Engine {
 		void setupPhysicalDevice();
 		void createLogicalDevice();
 		void createSurface( GLFWwindow* _pWindow );
+		void createDescriptorSetLayout();
+		void createDescriptorPool();
+		void createDescriptorSets();
 		void createGraphicsPipeline( bool _compile );
 		void createCommandPool();
 		void createCommandBuffers();
@@ -90,6 +96,9 @@ namespace Engine {
 		VkQueue m_PresentQueue;
 
 		VkPipeline m_GraphicsPipeline;
+		VkDescriptorSetLayout m_DescriptorSetLayout; // Add more later (controls set = x in shader)
+		VkDescriptorPool m_DescriptorPool;
+		std::vector<VkDescriptorSet> m_DescriptorSets;
 		VkPipelineLayout m_PipelineLayout;
 
 		VkCommandPool m_CommandPool;
@@ -106,9 +115,14 @@ namespace Engine {
 		std::mutex m_mutPipelineAccess;
 
 		std::vector<Scene::Mesh> m_Meshes;
+
 		std::vector<VkBuffer> m_VertexBuffers;
-		std::vector<VkBuffer> m_IndexBuffers;
 		std::vector<VkDeviceMemory> m_VertexBuffersMemory;
+
+		std::vector<VkBuffer> m_IndexBuffers;
 		std::vector<VkDeviceMemory> m_IndexBuffersMemory;
+
+		std::unique_ptr<UniformBuffer> m_CameraUBO;
+		std::vector<std::unique_ptr<UniformBuffer>> m_ModelUBOs;
 	};
 } // End Namespace Engine

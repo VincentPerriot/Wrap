@@ -6,6 +6,12 @@ App::ModelApp::AppScene::AppScene( Engine::Renderer& _renderer )
 	: m_Renderer( _renderer )
 {
 	start();
+
+	setInitialCamera( Scene::Camera {
+		.m_EyePos = Maths::Vector3{ 0.0f, 2.0f, 2.0f },
+		.m_LookAt = Maths::Vector3{ 0.0f, 0.0f, 0.0f },
+		.m_WorldUp = Maths::Vector3{ 0.0f, 1.0f, 0.0f },
+	} );
 }
 
 //--------------------------------------------------------------------------------
@@ -17,28 +23,10 @@ App::ModelApp::AppScene::~AppScene()
 //--------------------------------------------------------------------------------
 void App::ModelApp::AppScene::addGeometry()
 {
-	m_Quad1 = AddMesh( ::Scene::Primitives::Quad( "Quad_1" ) );
-	m_Triangle2 = AddMesh( ::Scene::Primitives::Triangle( "Tri_2" ) );
-	m_Quad3 = AddMesh( ::Scene::Primitives::Quad( "Quad_3" ) );
-	m_Triangle4 = AddMesh( ::Scene::Primitives::Triangle( "Tri_4" ) );
+	m_Quad1 = addMesh( ::Scene::Primitives::Quad( "Quad_1" ) );
+	m_Quad2 = addMesh( ::Scene::Primitives::Quad( "Quad_2" ) );
 
-	Maths::Vector2 vec1{ 0.4f, 0.4f };
-	if ( m_Quad1.isValid() )
-		translateMesh2D( m_Quad1, vec1 );
-
-	Maths::Vector2 vec2{ -0.4f, -0.4f };
-	if ( m_Triangle2.isValid() )
-		translateMesh2D( m_Triangle2, vec2 );
-
-	Maths::Vector2 vec3{ -0.4f, 0.4f };
-	if ( m_Quad3.isValid() )
-		translateMesh2D( m_Quad3, vec3 );
-
-	Maths::Vector2 vec4{ 0.4f, -0.4f };
-	if ( m_Triangle4.isValid() )
-		translateMesh2D( m_Triangle4, vec4 );
-
-	RendererUpdateMeshes( m_Renderer );
+	rendererUpdateMeshes( m_Renderer );
 }
 
 //--------------------------------------------------------------------------------
@@ -57,21 +45,5 @@ void App::ModelApp::AppScene::update()
 	m_LastTimeUpdate = now;
 	m_SceneTime += delta.count();
 
-	if ( m_SceneTime > 5.0f && m_RemoveTest1 )
-	{
-		RemoveMesh( m_Triangle2, m_Renderer );
-		m_RemoveTest1 = false;
-	}
 
-	if ( m_SceneTime > 10.0f && m_RemoveTest2 )
-	{
-		RemoveMesh( m_Quad1, m_Renderer );
-		m_RemoveTest2 = false;
-	}
-
-	if ( m_SceneTime > 15.0f && m_RemoveTest3 )
-	{
-		RemoveMesh( m_Triangle4, m_Renderer );
-		m_RemoveTest3 = false;
-	}
 }

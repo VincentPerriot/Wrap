@@ -2,7 +2,7 @@
 
 namespace Engine {
 	//----------------------------------------------------------------------------------
-	ShaderModule::ShaderModule( const Path& _filename, VkDevice& _device )
+	ShaderModule::ShaderModule( const Path& _filename, VkDevice _device )
 		: m_Device( _device )
 	{
 		auto code = readSPIRVShaderFile( _filename );

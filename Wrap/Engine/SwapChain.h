@@ -14,7 +14,7 @@ namespace Engine {
 
 	class SwapChain {
 	public:
-		SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _device, VkSurfaceKHR& _surface );
+		SwapChain( VkPhysicalDevice _physicalDevice, VkDevice _device, VkSurfaceKHR _surface );
 
 		~SwapChain();
 
@@ -53,8 +53,8 @@ namespace Engine {
 		void createRenderPass();
 
 		SwapChainSupportDetails m_SupportDetails;
-		VkDevice& m_Device;
-		VkPhysicalDevice& m_PhysicalDevice;
+		VkDevice m_Device;
+		VkPhysicalDevice m_PhysicalDevice;
 
 		std::vector<VkImage> m_SwapChainImages;
 		std::vector<VkImageView> m_ImageViews;
@@ -66,7 +66,7 @@ namespace Engine {
 
 		std::vector<VkFramebuffer> m_FrameBuffers;
 
-		VkSurfaceKHR& m_Surface;
+		VkSurfaceKHR m_Surface;
 		VkExtent2D m_Extent;
 	};
 

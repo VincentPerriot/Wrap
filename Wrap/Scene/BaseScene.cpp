@@ -1,11 +1,11 @@
-#include "Scene.h"
+#include "BaseScene.h"
 
 #include <algorithm>
 
 
 namespace Scene {
 	//--------------------------------------------------------------------
-	MeshHandle Scene::AddMesh( const Mesh& _mesh )
+	MeshHandle BaseScene::addMesh( const Mesh& _mesh )
 	{
 		std::unique_lock<std::shared_mutex> lock( m_Mutex );
 
@@ -21,7 +21,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	void Scene::updateHandleToMeshIdx()
+	void BaseScene::updateHandleToMeshIdx()
 	{
 		m_HandleToMeshIdxMap.clear();
 
@@ -37,19 +37,37 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	void Scene::translateMesh2D( MeshHandle _handle, const Maths::Vector2& _vector2 )
+	void BaseScene::setProjection( f32 _fov, f32 _aspect, f32 _near, f32 _far, Maths::AngleUnit _angleUnit /*= Maths::AngleUnit::DEGREES*/ )
 	{
-		if ( GetMesh( _handle ) )
-		{
-			for ( auto& vert : GetMesh( _handle )->getVertices() )
-			{
-				vert.m_Pos = vert.m_Pos + _vector2;
-			}
-		}
+
 	}
 
 	//--------------------------------------------------------------------
-	void Scene::RemoveMesh( MeshHandle _handle, Engine::Renderer& _renderer )
+	void BaseScene::updateCamera( Engine::Renderer& _renderer, const Camera& _cam )
+	{
+
+	}
+
+	//--------------------------------------------------------------------
+	void BaseScene::updateMeshPosition( MeshHandle _handle, Maths::Vector3 _position )
+	{
+
+	}
+
+	//--------------------------------------------------------------------
+	void BaseScene::updateMeshScale( MeshHandle _handle, Maths::Vector3 _scale )
+	{
+
+	}
+
+	//--------------------------------------------------------------------
+	void BaseScene::updateMeshRotation( MeshHandle _handle, Maths::Vector3 _rotation )
+	{
+
+	}
+
+	//--------------------------------------------------------------------
+	void BaseScene::removeMesh( MeshHandle _handle, Engine::Renderer& _renderer )
 	{
 		std::unique_lock<std::shared_mutex> lock( m_Mutex );
 
@@ -84,7 +102,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	Mesh* Scene::GetMesh( std::string_view _name )
+	Mesh* BaseScene::getMesh( std::string_view _name )
 	{
 		std::shared_lock<std::shared_mutex> lock( m_Mutex );
 		auto pos = std::ranges::find_if( m_MeshData, [&]( const auto& _mesh ) { return _mesh.getName() == _name; } );
@@ -101,7 +119,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	Mesh* Scene::GetMesh( MeshHandle _handle )
+	Mesh* BaseScene::getMesh( MeshHandle _handle )
 	{
 		std::shared_lock<std::shared_mutex> lock( m_Mutex );
 		auto pos = std::ranges::find_if( m_HandleToMeshIdxMap, [&]( const auto& _pairing ) { return _pairing.first == _handle; } );
@@ -124,7 +142,7 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	void Scene::RendererUpdateMeshes( Engine::Renderer& _renderer )
+	void BaseScene::rendererUpdateMeshes( Engine::Renderer& _renderer )
 	{
 		std::shared_lock<std::shared_mutex> lock( m_Mutex );
 		_renderer.loadMeshes( m_MeshData );

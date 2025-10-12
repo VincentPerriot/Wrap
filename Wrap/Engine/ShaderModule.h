@@ -12,7 +12,7 @@ namespace Engine {
 		using Path = std::filesystem::path;
 
 	public:
-		ShaderModule( const Path& _filename, VkDevice& _device );
+		ShaderModule( const Path& _filename, VkDevice _device );
 
 		ShaderModule( const ShaderModule& _other ) = delete;
 		ShaderModule& operator=( const ShaderModule& ) = delete;
@@ -30,7 +30,7 @@ namespace Engine {
 		void createShaderModule( std::vector<char> _code );
 
 		VkShaderModule m_ShaderModule;
-		VkDevice& m_Device;
+		VkDevice m_Device;
 	};
 
 	inline VkShaderModule Engine::ShaderModule::getShaderModule() const

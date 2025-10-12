@@ -144,8 +144,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\VulkanMemory.cpp" />
+    <ClCompile Include="Maths\LinAlg.cpp" />
     <ClCompile Include="Maths\Matrix4.cpp" />
-    <ClCompile Include="Scene\Transforms.cpp" />
+    <ClCompile Include="Engine\UniformBuffer.cpp" />
     <ClCompile Include="Utils\UnitConvert.cpp" />
     <ClCompile Include="Warp\ModelApp\AppScene.cpp" />
     <ClCompile Include="Engine\Renderer.cpp" />
@@ -160,16 +161,18 @@
     <ClCompile Include="Scene\PrimitiveMeshes\Cube.cpp" />
     <ClCompile Include="Scene\PrimitiveMeshes\Quad.cpp" />
     <ClCompile Include="Scene\PrimitiveMeshes\Triangle.cpp" />
-    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\BaseScene.cpp" />
     <ClCompile Include="Platforms\Windows\Display.cpp" />
     <ClCompile Include="Utils\FileWatcher.cpp" />
     <ClCompile Include="Warp\ModelApp\ModelApp.cpp" />
     <ClCompile Include="Warp\TriangleApp\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\VulkanConstants.h" />
     <ClInclude Include="Engine\VulkanMemory.h" />
+    <ClInclude Include="Maths\LinAlg.h" />
     <ClInclude Include="Maths\Matrix4.h" />
-    <ClInclude Include="Scene\Transforms.h" />
+    <ClInclude Include="Engine\UniformBuffer.h" />
     <ClInclude Include="Utils\UnitConvert.h" />
     <ClInclude Include="Warp\ModelApp\AppScene.h" />
     <ClInclude Include="Engine\Debug.h" />
@@ -185,7 +188,7 @@
     <ClInclude Include="Scene\PrimitiveMeshes\Cube.h" />
     <ClInclude Include="Scene\PrimitiveMeshes\Quad.h" />
     <ClInclude Include="Scene\PrimitiveMeshes\Triangle.h" />
-    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\BaseScene.h" />
     <ClInclude Include="Utils\FileWatcher.h" />
     <ClInclude Include="Utils\Common.h" />
     <ClInclude Include="Platforms\Windows\Display.h" />

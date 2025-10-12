@@ -1,14 +1,14 @@
 #pragma once
 #pragma once
 
-#include "../../Scene/Scene.h"
+#include "../../Scene/BaseScene.h"
 
 #include "../../Scene/PrimitiveMeshes/Triangle.h"
 #include "../../Scene/PrimitiveMeshes/Quad.h"
 
 namespace App::ModelApp
 {
-	class AppScene : Scene::Scene
+	class AppScene : Scene::BaseScene
 	{
 	public:
 		AppScene( Engine::Renderer& _renderer );
@@ -21,9 +21,7 @@ namespace App::ModelApp
 		void addGeometry();
 
 		::Scene::MeshHandle m_Quad1;
-		::Scene::MeshHandle m_Triangle2;
-		::Scene::MeshHandle m_Quad3;
-		::Scene::MeshHandle m_Triangle4;
+		::Scene::MeshHandle m_Quad2;
 
 		f32 m_SceneTime{ 0.0f };
 		std::chrono::time_point<std::chrono::steady_clock> m_LastTimeUpdate;

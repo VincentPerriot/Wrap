@@ -4,7 +4,7 @@
 
 namespace Engine {
 	//------------------------------------------------------------------------------------
-	Engine::SwapChain::SwapChain( VkPhysicalDevice& _physicalDevice, VkDevice& _device, VkSurfaceKHR& _surface )
+	Engine::SwapChain::SwapChain( VkPhysicalDevice _physicalDevice, VkDevice _device, VkSurfaceKHR _surface )
 		: m_Device( _device )
 		, m_Surface( _surface )
 		, m_PhysicalDevice( _physicalDevice )
