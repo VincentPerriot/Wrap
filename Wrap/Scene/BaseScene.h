@@ -30,6 +30,12 @@ namespace Scene {
 		Maths::Vector3 m_WorldUp;
 	};
 
+	struct ProjectionSettings {
+		f32 m_Fov;
+		f32 m_Near;
+		f32 m_Far;
+	};
+
 	class BaseScene
 	{
 	public:
@@ -38,7 +44,6 @@ namespace Scene {
 
 		void setProjection( f32 _fov, f32 _aspect, f32 _near, f32 _far, Maths::AngleUnit _angleUnit = Maths::AngleUnit::DEGREES );
 
-		void updateCamera( Engine::Renderer& _renderer, const Camera& _cam );
 
 		void updateMeshPosition( MeshHandle _handle, Maths::Vector3 _position );
 		void updateMeshScale( MeshHandle _handle, Maths::Vector3 _scale );
@@ -48,16 +53,14 @@ namespace Scene {
 		Mesh* getMesh( MeshHandle _handle );
 		Mesh* getMesh( std::string_view _name );
 
+		void updateCamera( Engine::Renderer& _renderer, const Camera& _cam, const ProjectionSettings& _settings );
 		void rendererUpdateMeshes( Engine::Renderer& _renderer );
 
 	private:
-		void updateModelsTransform( Engine::Renderer& _renderer );
-
 		u32 m_NextMeshHandleId{ 0 };
 		std::vector<std::pair<MeshHandle, size_t>> m_HandleToMeshIdxMap;
 		std::vector<MeshHandle> m_MeshHandles;
 		std::vector<Mesh> m_MeshData;
-		Camera m_Camera;
 
 		mutable std::shared_mutex m_Mutex;
 	};

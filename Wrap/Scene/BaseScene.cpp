@@ -43,9 +43,11 @@ namespace Scene {
 	}
 
 	//--------------------------------------------------------------------
-	void BaseScene::updateCamera( Engine::Renderer& _renderer, const Camera& _cam )
+	void BaseScene::updateCamera( Engine::Renderer& _renderer, const Camera& _cam, const ProjectionSettings& _settings )
 	{
+		Maths::Matrix4 viewMat = Maths::Matrix4::View( _cam.m_EyePos, _cam.m_LookAt, _cam.m_WorldUp );
 
+		_renderer.updateCameraUBO( viewMat, _settings.m_Fov, _settings.m_Near, _settings.m_Far );
 	}
 
 	//--------------------------------------------------------------------

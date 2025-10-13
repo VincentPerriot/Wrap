@@ -17,6 +17,7 @@ namespace Maths {
 		Vector4 c1{}, c2{}, c3{}, c4{};
 
 		constexpr static Matrix4 Identity();
+		inline static Matrix4 DefaultModelMatrix();
 		inline static Matrix4 Model( const Vector3& _pos, const Vector3& _rot, const Vector3& _scale, AngleUnit _angleUnit = AngleUnit::DEGREES );
 		inline static Matrix4 View( const Vector3& _eye, const Vector3& _target, const Vector3 _up );
 		inline static Matrix4 Projection( f32 _fov, f32 _aspect, f32 _near, f32 _far, AngleUnit _angleUnit = AngleUnit::DEGREES );
@@ -30,6 +31,11 @@ namespace Maths {
 			.c3 = Vector4{ 0, 0, 1, 0 },
 			.c4 = Vector4{ 0, 0, 0, 1 }
 		};
+	}
+
+	Maths::Matrix4 Matrix4::DefaultModelMatrix()
+	{
+		return Matrix4::Model( Maths::Vector3{ 0.0f, 0.0f, 0.f }, Maths::Vector3{ 0.0f, 0.0f, 0.0f }, Maths::Vector3{ 1.0f, 1.0f, 1.0f } );
 	}
 
 	inline Maths::Matrix4 Matrix4::Model( const Vector3& _pos, const Vector3& _rot, const Vector3& _scale, AngleUnit _angleUnit /*= Maths::AngleUnit::DEGREES*/ )

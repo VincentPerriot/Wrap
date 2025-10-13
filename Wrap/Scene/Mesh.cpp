@@ -13,6 +13,12 @@ Scene::Mesh::~Mesh()
 }
 
 //--------------------------------------------------------------------
+void Scene::Mesh::setTransforms( const Maths::Matrix4& _mat )
+{
+	m_ModelMat = _mat;
+}
+
+//--------------------------------------------------------------------
 void Scene::Mesh::setVertices()
 {
 }

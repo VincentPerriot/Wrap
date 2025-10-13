@@ -19,6 +19,7 @@ namespace App::ModelApp
 
 	private:
 		void addGeometry();
+		void setUpCamera();
 
 		::Scene::MeshHandle m_Quad1;
 		::Scene::MeshHandle m_Quad2;
@@ -30,6 +31,9 @@ namespace App::ModelApp
 		bool m_RemoveTest1{ true };
 		bool m_RemoveTest2{ true };
 		bool m_RemoveTest3{ true };
+
+		Scene::Camera m_Camera;
+		Scene::ProjectionSettings m_ProjectionSettings;
 	};
 } // end namespace App::ModelApp
 

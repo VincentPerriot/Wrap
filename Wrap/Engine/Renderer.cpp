@@ -61,12 +61,13 @@ namespace Engine {
 		createSurface( _pWindow );
 		setupPhysicalDevice();
 		createLogicalDevice();
-
 		m_Swapchain = std::make_unique<Engine::SwapChain>( m_PhysicalDevice, m_LogicalDevice, m_Surface );
 		assert( isDeviceSuitable() );
 		m_ShaderWatcher = std::make_unique<FileWatcher>( "./Shaders", [this]( const std::filesystem::path& _path ) { this->onShaderModification( _path ); } );
 
 		m_CameraUBO = std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( CameraUBO ) );
+		m_ModelUBOs.push_back( std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( ModelUBO ) ) );
+
 		createDescriptorSetLayout();
 		createDescriptorPool();
 		createDescriptorSets();
@@ -237,7 +238,7 @@ namespace Engine {
 		VkDescriptorSetLayoutBinding uboModelBinding{
 			.binding = 1,
 			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = 1,
+			.descriptorCount = static_cast<u32>( m_ModelUBOs.size() ),
 			.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
 			.pImmutableSamplers = nullptr
 		};
@@ -274,7 +275,7 @@ namespace Engine {
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.maxSets = MAX_FRAMES_IN_FLIGHT * ( 1 + m_Meshes.size() ),
+			.maxSets = static_cast<u32>( MAX_FRAMES_IN_FLIGHT ),
 			.poolSizeCount = static_cast<u32>( poolSizes.size() ),
 			.pPoolSizes = poolSizes.data()
 		};
@@ -285,7 +286,7 @@ namespace Engine {
 	//----------------------------------------------------------------------------------
 	void Renderer::createDescriptorSets()
 	{
-		std::vector<VkDescriptorSetLayout> layouts( MAX_FRAMES_IN_FLIGHT * ( 1 + m_Meshes.size() ), m_DescriptorSetLayout );
+		std::vector<VkDescriptorSetLayout> layouts( MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout );
 
 		VkDescriptorSetAllocateInfo allocInfo{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -295,18 +296,18 @@ namespace Engine {
 			.pSetLayouts = layouts.data()
 		};
 
-		m_DescriptorSets.resize( MAX_FRAMES_IN_FLIGHT * ( 1 + m_Meshes.size() ) );
+		m_DescriptorSets.resize( MAX_FRAMES_IN_FLIGHT );
 		VK_ASSERT( vkAllocateDescriptorSets( m_LogicalDevice, &allocInfo, m_DescriptorSets.data() ) );
 
 		for ( size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ )
 		{
-			VkDescriptorBufferInfo bufferInfo{
+			VkDescriptorBufferInfo camBufferInfo{
 				.buffer = m_CameraUBO->getBuffer()[i],
 				.offset = 0,
 				.range = m_CameraUBO->getUBOSize()
 			};
 
-			VkWriteDescriptorSet descWrite{
+			VkWriteDescriptorSet descWriteCamera{
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 				.pNext = nullptr,
 				.dstSet = m_DescriptorSets[i],
@@ -315,11 +316,36 @@ namespace Engine {
 				.descriptorCount = 1,
 				.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				.pImageInfo = nullptr,
-				.pBufferInfo = &bufferInfo,
+				.pBufferInfo = &camBufferInfo,
 				.pTexelBufferView = nullptr
 			};
 
-			vkUpdateDescriptorSets( m_LogicalDevice, 1, &descWrite, 0, nullptr );
+			std::vector<VkDescriptorBufferInfo> modelBufferInfos( m_ModelUBOs.size() );
+			for ( size_t j = 0; j < m_ModelUBOs.size(); j++ )
+			{
+				modelBufferInfos[j] = VkDescriptorBufferInfo{
+					.buffer = m_ModelUBOs[j]->getBuffer()[i],
+					.offset = 0,
+					.range = m_ModelUBOs[j]->getUBOSize()
+				};
+			}
+
+			VkWriteDescriptorSet descWriteModels{
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.pNext = nullptr,
+				.dstSet = m_DescriptorSets[i],
+				.dstBinding = 1,
+				.dstArrayElement = 0,
+				.descriptorCount = static_cast<u32>( m_ModelUBOs.size() ),
+				.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				.pImageInfo = nullptr,
+				.pBufferInfo = modelBufferInfos.data(),
+				.pTexelBufferView = nullptr
+			};
+
+			std::array<VkWriteDescriptorSet, 2> descWrites{ descWriteModels, descWriteCamera };
+
+			vkUpdateDescriptorSets( m_LogicalDevice, static_cast<u32>( descWrites.size() ), descWrites.data(), 0, nullptr );
 		}
 	}
 
@@ -487,14 +513,20 @@ namespace Engine {
 			.blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
 		};
 
+		VkPushConstantRange pushConstantRange{
+			.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+			.offset = 0,
+			.size = sizeof( u32 )
+		};
+
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.setLayoutCount = 0,
-			.pSetLayouts = nullptr,
-			.pushConstantRangeCount = 0,
-			.pPushConstantRanges = nullptr
+			.setLayoutCount = 1,
+			.pSetLayouts = &m_DescriptorSetLayout,
+			.pushConstantRangeCount = 1,
+			.pPushConstantRanges = &pushConstantRange
 		};
 
 		VK_ASSERT( vkCreatePipelineLayout( m_LogicalDevice, &pipelineLayoutCreateInfo, nullptr, &m_PipelineLayout ) );
@@ -586,6 +618,17 @@ namespace Engine {
 	}
 
 	//----------------------------------------------------------------------------------
+	void Renderer::updateDescriptors()
+	{
+		vkDestroyDescriptorPool( m_LogicalDevice, m_DescriptorPool, nullptr );
+		vkDestroyDescriptorSetLayout( m_LogicalDevice, m_DescriptorSetLayout, nullptr );
+
+		createDescriptorSetLayout();
+		createDescriptorPool();
+		createDescriptorSets();
+	}
+
+	//----------------------------------------------------------------------------------
 	void Renderer::recordCommandBuffer( u32 _imageIndex )
 	{
 		std::lock_guard<std::mutex> guard( m_mutPipelineAccess );
@@ -630,11 +673,17 @@ namespace Engine {
 		};
 		vkCmdSetScissor( m_CommandBuffers[m_CurrentFrame], 0, 1, &scissor );
 
+		vkCmdBindDescriptorSets( m_CommandBuffers[m_CurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
+			&m_DescriptorSets[m_CurrentFrame], 0, nullptr );
+
 		for ( size_t i = 0; i < m_Meshes.size(); i++ )
 		{
 			std::vector<VkDeviceSize> offsets( m_Meshes.size() );
 			vkCmdBindVertexBuffers( m_CommandBuffers[m_CurrentFrame], 0, 1, &m_VertexBuffers[i], offsets.data() );
 			vkCmdBindIndexBuffer( m_CommandBuffers[m_CurrentFrame], m_IndexBuffers[i], 0, VK_INDEX_TYPE_UINT16 );
+
+			u32 modelIndex = static_cast<u32>( i );
+			vkCmdPushConstants( m_CommandBuffers[m_CurrentFrame], m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( u32 ), &modelIndex );
 
 			u32 indexCount = static_cast<u32>( m_Meshes[i].getIndices().size() );
 			vkCmdDrawIndexed( m_CommandBuffers[m_CurrentFrame], indexCount, 1, 0, 0, 0 );
@@ -757,6 +806,7 @@ namespace Engine {
 		m_IndexBuffers.resize( numMeshes );
 		m_VertexBuffersMemory.resize( numMeshes );
 		m_IndexBuffersMemory.resize( numMeshes );
+		m_ModelUBOs.resize( numMeshes );
 
 		for ( size_t i = 0; i < numMeshes; i++ )
 		{
@@ -764,13 +814,35 @@ namespace Engine {
 				m_VertexBuffersMemory[i], m_CommandPool, m_GraphicsQueue );
 			VulkanMemory::createMeshIndexBuffer( m_LogicalDevice, m_PhysicalDevice, m_Meshes[i], m_IndexBuffers[i],
 				m_IndexBuffersMemory[i], m_CommandPool, m_GraphicsQueue );
+
+			m_ModelUBOs[i] = std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( ModelUBO ) );
+			updateModelUBOs( i, m_Meshes[i].getModelMat() );
 		}
 
-		m_ModelUBOs.resize( m_Meshes.size() );
-		for ( auto& pUBO : m_ModelUBOs )
-		{
-			pUBO = std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( ModelUBO ) );
-		}
+		updateDescriptors();
+	}
+
+	//----------------------------------------------------------------------------------
+	void Renderer::addMesh( Scene::Mesh _mesh )
+	{
+		m_Meshes.push_back( _mesh );
+		size_t idx = m_Meshes.size() - 1;
+
+		m_VertexBuffers.resize( idx + 1 );
+		m_IndexBuffers.resize( idx + 1 );
+		m_VertexBuffersMemory.resize( idx + 1 );
+		m_IndexBuffersMemory.resize( idx + 1 );
+		m_ModelUBOs.resize( idx + 1 );
+
+		VulkanMemory::createMeshVertexBuffer( m_LogicalDevice, m_PhysicalDevice, m_Meshes[idx], m_VertexBuffers[idx],
+			m_VertexBuffersMemory[idx], m_CommandPool, m_GraphicsQueue );
+		VulkanMemory::createMeshIndexBuffer( m_LogicalDevice, m_PhysicalDevice, m_Meshes[idx], m_IndexBuffers[idx],
+			m_IndexBuffersMemory[idx], m_CommandPool, m_GraphicsQueue );
+
+		m_ModelUBOs[idx] = std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( ModelUBO ) );
+		updateModelUBOs( idx, m_Meshes[idx].getModelMat() );
+
+		updateDescriptors();
 	}
 
 	//----------------------------------------------------------------------------------
@@ -794,6 +866,8 @@ namespace Engine {
 
 			m_ModelUBOs.erase( m_ModelUBOs.begin() + index );
 		}
+
+		updateDescriptors();
 	}
 
 	//----------------------------------------------------------------------------------

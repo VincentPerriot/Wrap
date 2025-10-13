@@ -45,6 +45,7 @@ namespace Engine {
 
 		bool checkValidationSupport();
 		void loadMeshes( std::vector<Scene::Mesh> _meshes );
+		void addMesh( Scene::Mesh _mesh );
 		void removeMesh( Scene::Mesh& _mesh );
 
 		void drawFrames();
@@ -52,7 +53,6 @@ namespace Engine {
 		void updateCameraUBO( Maths::Matrix4 _view, f32 _fov, f32 _near, f32 _far );
 		void updateModelUBOs( size_t _pos, Maths::Matrix4 _model );
 
-		// Temporary only running on GLFW
 		void init( GLFWwindow* _pWindow );
 
 	private:
@@ -67,6 +67,8 @@ namespace Engine {
 		void createCommandPool();
 		void createCommandBuffers();
 		void createSyncObjects();
+
+		void updateDescriptors();
 
 		void recordCommandBuffer( u32 _imageIndex );
 
@@ -96,7 +98,7 @@ namespace Engine {
 		VkQueue m_PresentQueue;
 
 		VkPipeline m_GraphicsPipeline;
-		VkDescriptorSetLayout m_DescriptorSetLayout; // Add more later (controls set = x in shader)
+		VkDescriptorSetLayout m_DescriptorSetLayout;
 		VkDescriptorPool m_DescriptorPool;
 		std::vector<VkDescriptorSet> m_DescriptorSets;
 		VkPipelineLayout m_PipelineLayout;

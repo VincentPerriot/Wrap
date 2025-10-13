@@ -11,10 +11,6 @@
 
 namespace App {
 
-	static constexpr f32 FOV = 45.0f;
-	static constexpr f32 NEAR_CLIP = 0.1f;
-	static constexpr f32 FAR_CLIP = 10.0f;
-
 	namespace ModelApp
 	{
 		class ModelApp
@@ -27,11 +23,12 @@ namespace App {
 			void run();
 
 		private:
-			void initVulkan();
 
 			void mainLoop();
 
 			void createScene();
+
+			void initVulkan();
 
 			std::unique_ptr<Engine::Renderer> m_pRenderer;
 			std::unique_ptr<AppScene> m_AppScene;
