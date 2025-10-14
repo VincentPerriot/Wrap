@@ -10,7 +10,7 @@ namespace Scene {
 	class Mesh
 	{
 	public:
-		Mesh( std::string_view _name );
+		Mesh( std::string_view _name, const Maths::Matrix4& _modelMat = Maths::Matrix4::DefaultModelMatrix() );
 		virtual ~Mesh();
 
 		bool operator==( const Mesh& _other ) const { return m_Name == _other.m_Name; };
@@ -34,6 +34,6 @@ namespace Scene {
 		std::string m_Name;
 		std::vector<Engine::Vertex> m_Vertices{};
 		std::vector<u16> m_Indices{};
-		Maths::Matrix4 m_ModelMat = Maths::Matrix4::DefaultModelMatrix();
+		Maths::Matrix4 m_ModelMat;
 	};
 } // end namespace Scene

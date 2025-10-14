@@ -44,6 +44,13 @@ namespace Engine {
 			vkDestroyFence( m_LogicalDevice, m_inFlightFences[i], nullptr );
 		}
 
+		// Necessary even on smart ptrs as they need to go before detroyDevice
+		m_CameraUBO.reset();
+		for ( auto& ubo : m_ModelUBOs )
+		{
+			ubo.reset();
+		}
+
 		vkDestroyDevice( m_LogicalDevice, nullptr );
 
 		vkDestroySurfaceKHR( m_Instance, m_Surface, nullptr );
@@ -66,6 +73,7 @@ namespace Engine {
 		m_ShaderWatcher = std::make_unique<FileWatcher>( "./Shaders", [this]( const std::filesystem::path& _path ) { this->onShaderModification( _path ); } );
 
 		m_CameraUBO = std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( CameraUBO ) );
+		m_ModelUBOs.push_back( std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( ModelUBO ) ) );
 		m_ModelUBOs.push_back( std::make_unique<UniformBuffer>( m_LogicalDevice, m_PhysicalDevice, sizeof( ModelUBO ) ) );
 
 		createDescriptorSetLayout();
@@ -195,12 +203,23 @@ namespace Engine {
 				};
 			} );
 
-		// Massive Struct -> GO back to it and pick features after more readings
-		VkPhysicalDeviceFeatures features{};
+		// TODO Look into these more carefully and create full structures
+		VkPhysicalDeviceFeatures enabledFeatures{};
+		enabledFeatures.samplerAnisotropy = VK_TRUE;
+
+		VkPhysicalDeviceVulkan13Features features13{};
+		features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+		features13.pNext = nullptr;
+
+		VkPhysicalDeviceVulkan12Features features12{};
+		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+		features12.runtimeDescriptorArray = VK_TRUE;
+		features12.shaderUniformBufferArrayNonUniformIndexing = VK_TRUE;
+		features12.pNext = &features13;
 
 		VkDeviceCreateInfo createInfo{
 			.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-			.pNext = nullptr,
+			.pNext = &features12,
 			.flags = 0,
 			.queueCreateInfoCount = static_cast<u32>( queueCreateInfos.size() ),
 			.pQueueCreateInfos = queueCreateInfos.data(),
@@ -208,7 +227,7 @@ namespace Engine {
 			.ppEnabledLayerNames = enableValidationLayers ? validation_layers.data() : nullptr,
 			.enabledExtensionCount = static_cast<u32>( device_extensions.size() ),
 			.ppEnabledExtensionNames = device_extensions.data(),
-			.pEnabledFeatures = &features
+			.pEnabledFeatures = &enabledFeatures
 		};
 
 		VK_ASSERT( vkCreateDevice( m_PhysicalDevice, &createInfo, nullptr, &m_LogicalDevice ) );
@@ -266,7 +285,7 @@ namespace Engine {
 
 		VkDescriptorPoolSize ModelsPoolSize{
 			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = static_cast<u32>( MAX_FRAMES_IN_FLIGHT * m_Meshes.size() )
+			.descriptorCount = static_cast<u32>( MAX_FRAMES_IN_FLIGHT * m_ModelUBOs.size() )
 		};
 
 		std::array<VkDescriptorPoolSize, 2> poolSizes{ CamPoolSize, ModelsPoolSize };
@@ -471,7 +490,7 @@ namespace Engine {
 			.rasterizerDiscardEnable = VK_FALSE,
 			.polygonMode = VK_POLYGON_MODE_FILL,
 			.cullMode = VK_CULL_MODE_BACK_BIT,
-			.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+			.frontFace = VK_FRONT_FACE_CLOCKWISE,
 			.depthBiasEnable = VK_FALSE,
 			.depthBiasConstantFactor = 0.0f,
 			.depthBiasClamp = 0.0f,
@@ -938,7 +957,10 @@ namespace Engine {
 			.m_Proj = proj
 		};
 
-		m_CameraUBO->update( m_CurrentFrame, &camera, sizeof( CameraUBO ) );
+		for ( size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ )
+		{
+			m_CameraUBO->update( static_cast<u32>( i ), &camera, sizeof( CameraUBO ) );
+		}
 	}
 
 	//----------------------------------------------------------------------------------
@@ -947,8 +969,10 @@ namespace Engine {
 		ModelUBO model{
 			.m_Model = _model
 		};
-
-		m_ModelUBOs[_pos]->update( m_CurrentFrame, &model, sizeof( ModelUBO ) );
+		for ( size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ )
+		{
+			m_ModelUBOs[_pos]->update( static_cast<u32>( i ), &model, sizeof( ModelUBO ) );
+		}
 	}
 
 	//----------------------------------------------------------------------------------

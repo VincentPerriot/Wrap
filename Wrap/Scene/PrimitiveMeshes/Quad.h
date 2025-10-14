@@ -7,8 +7,8 @@ namespace Scene {
 		class Quad : public Mesh
 		{
 		public:
-			Quad( std::string_view _name );
-			~Quad();
+			Quad( std::string_view _name, const Maths::Matrix4& _modelMat = Maths::Matrix4::DefaultModelMatrix() );
+			virtual ~Quad();
 
 			virtual void setVertices() override;
 			virtual void setIndices() override;

@@ -1,5 +1,7 @@
 #version 450
 
+#extension GL_EXT_nonuniform_qualifier : enable
+
 layout( set = 0, binding = 0 ) uniform CameraUBO
 {
     mat4 view;
@@ -22,6 +24,6 @@ layout(location = 0) out vec3 fragColor;
 
 void main() 
 {
-    gl_Position = camera.proj * camera.view * models[pushConsts.modelIndex].model * vec4(inPosition, 0.0, 1.0 );
+    gl_Position = camera.proj * camera.view * models[nonuniformEXT(pushConsts.modelIndex)].model * vec4(inPosition, 0.0, 1.0 );
     fragColor = inColor;
 }

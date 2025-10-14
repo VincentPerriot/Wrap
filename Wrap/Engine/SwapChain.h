@@ -12,7 +12,7 @@ namespace Engine {
 		std::vector<VkPresentModeKHR> m_PresentModes;
 	};
 
-	class SwapChain {
+	class SwapChain final {
 	public:
 		SwapChain( VkPhysicalDevice _physicalDevice, VkDevice _device, VkSurfaceKHR _surface );
 

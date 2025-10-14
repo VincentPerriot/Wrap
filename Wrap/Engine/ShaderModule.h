@@ -20,7 +20,7 @@ namespace Engine {
 		ShaderModule( ShaderModule&& _other ) = delete;
 		ShaderModule& operator=( ShaderModule&& ) = delete;
 
-		~ShaderModule();
+		virtual ~ShaderModule();
 
 		VkShaderModule getShaderModule() const;
 

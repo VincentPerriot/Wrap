@@ -10,7 +10,7 @@
 
 namespace Scene {
 
-	struct MeshHandle 
+	struct MeshHandle
 	{
 		u32 m_Id;
 		bool m_Valid = { true };
@@ -39,24 +39,25 @@ namespace Scene {
 	class BaseScene
 	{
 	public:
-		MeshHandle addMesh( const Mesh& _mesh );
-		void updateHandleToMeshIdx();
+		Mesh* getMesh( MeshHandle _handle );
+		Mesh* getMesh( std::string_view _name );
 
+	protected:
 		void setProjection( f32 _fov, f32 _aspect, f32 _near, f32 _far, Maths::AngleUnit _angleUnit = Maths::AngleUnit::DEGREES );
-
 
 		void updateMeshPosition( MeshHandle _handle, Maths::Vector3 _position );
 		void updateMeshScale( MeshHandle _handle, Maths::Vector3 _scale );
 		void updateMeshRotation( MeshHandle _handle, Maths::Vector3 _rotation );
 
+		MeshHandle addMesh( const Mesh& _mesh );
 		void removeMesh( MeshHandle _handle, Engine::Renderer& _renderer );
-		Mesh* getMesh( MeshHandle _handle );
-		Mesh* getMesh( std::string_view _name );
 
 		void updateCamera( Engine::Renderer& _renderer, const Camera& _cam, const ProjectionSettings& _settings );
 		void rendererUpdateMeshes( Engine::Renderer& _renderer );
 
 	private:
+		void updateHandleToMeshIdx();
+
 		u32 m_NextMeshHandleId{ 0 };
 		std::vector<std::pair<MeshHandle, size_t>> m_HandleToMeshIdxMap;
 		std::vector<MeshHandle> m_MeshHandles;

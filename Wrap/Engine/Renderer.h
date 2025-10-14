@@ -31,7 +31,7 @@ namespace Engine {
 		bool verifyGraphics() { return m_Graphics.has_value() && m_Present.has_value(); }
 	};
 
-	class Renderer
+	class Renderer final
 	{
 	public:
 		Renderer();

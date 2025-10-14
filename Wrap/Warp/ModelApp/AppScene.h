@@ -12,7 +12,7 @@ namespace App::ModelApp
 	{
 	public:
 		AppScene( Engine::Renderer& _renderer );
-		~AppScene();
+		virtual ~AppScene();
 
 		void start();
 		void update();
@@ -30,7 +30,6 @@ namespace App::ModelApp
 
 		bool m_RemoveTest1{ true };
 		bool m_RemoveTest2{ true };
-		bool m_RemoveTest3{ true };
 
 		Scene::Camera m_Camera;
 		Scene::ProjectionSettings m_ProjectionSettings;

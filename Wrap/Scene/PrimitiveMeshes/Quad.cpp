@@ -1,8 +1,8 @@
 #include "Quad.h"
 
 //--------------------------------------------------------------------
-Scene::Primitives::Quad::Quad( std::string_view _name )
-	: Mesh( _name )
+Scene::Primitives::Quad::Quad( std::string_view _name, const Maths::Matrix4& _modelMat )
+	: Mesh( _name, _modelMat )
 {
 	setVertices();
 	setIndices();

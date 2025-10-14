@@ -1,8 +1,9 @@
 #include "Mesh.h"
 
 //--------------------------------------------------------------------
-Scene::Mesh::Mesh( std::string_view _name )
+Scene::Mesh::Mesh( std::string_view _name, const Maths::Matrix4& _modelMat )
 	: m_Name( _name )
+	, m_ModelMat( _modelMat )
 {
 }
 

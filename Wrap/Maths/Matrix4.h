@@ -110,7 +110,7 @@ namespace Maths {
 
 		return Matrix4{
 			.c1 = Vector4{ a, 0.0f, 0.0f,  0.0f },
-			.c2 = Vector4{ 0.0f, -b, 0.0f, 0.0f },
+			.c2 = Vector4{ 0.0f, b, 0.0f, 0.0f },
 			.c3 = Vector4{ 0.0f, 0.0f, c, 1.0f },
 			.c4 = Vector4{ 0.0f, 0.0f, d, 0.0f }
 		};

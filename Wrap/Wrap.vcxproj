@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\VulkanMemory.cpp" />
+    <ClCompile Include="Utils\ImageLoader.cpp" />
     <ClCompile Include="Maths\LinAlg.cpp" />
     <ClCompile Include="Maths\Matrix4.cpp" />
     <ClCompile Include="Engine\UniformBuffer.cpp" />
@@ -170,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="Engine\VulkanConstants.h" />
     <ClInclude Include="Engine\VulkanMemory.h" />
+    <ClInclude Include="Utils\ImageLoader.h" />
     <ClInclude Include="Maths\LinAlg.h" />
     <ClInclude Include="Maths\Matrix4.h" />
     <ClInclude Include="Engine\UniformBuffer.h" />

@@ -28,7 +28,7 @@ namespace Engine
 		UniformBuffer( UniformBuffer&& _other ) = delete;
 		UniformBuffer& operator=( UniformBuffer&& ) = delete;
 
-		~UniformBuffer();
+		virtual ~UniformBuffer();
 
 		void update( u32 _currentImage, const void* _data, size_t _size );
 

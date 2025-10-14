@@ -18,7 +18,9 @@ App::ModelApp::AppScene::~AppScene()
 void App::ModelApp::AppScene::addGeometry()
 {
 	m_Quad1 = addMesh( ::Scene::Primitives::Quad( "Quad_1" ) );
-	//m_Quad2 = addMesh( ::Scene::Primitives::Quad( "Quad_2" ) );
+
+	auto mesh2Mat = Maths::Matrix4::Model( {1.0f, 0.0f, 0.0f}, {0.0f, 20.0f, 0.0f}, {0.5f, 0.5f, 0.5f} );
+	m_Quad2 = addMesh( ::Scene::Primitives::Quad( "Quad_2", mesh2Mat ) );
 
 	rendererUpdateMeshes( m_Renderer );
 }
