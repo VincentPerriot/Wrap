@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.3.290.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.3.290.0\Include;$(SolutionDir)..\..\Libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
@@ -129,7 +129,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.3.290.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.3.290.0\Include;$(SolutionDir)..\..\Libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
@@ -144,7 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\VulkanMemory.cpp" />
-    <ClCompile Include="Utils\ImageLoader.cpp" />
+    <ClCompile Include="Engine\Image.cpp" />
     <ClCompile Include="Maths\LinAlg.cpp" />
     <ClCompile Include="Maths\Matrix4.cpp" />
     <ClCompile Include="Engine\UniformBuffer.cpp" />
@@ -171,7 +171,7 @@
   <ItemGroup>
     <ClInclude Include="Engine\VulkanConstants.h" />
     <ClInclude Include="Engine\VulkanMemory.h" />
-    <ClInclude Include="Utils\ImageLoader.h" />
+    <ClInclude Include="Engine\Image.h" />
     <ClInclude Include="Maths\LinAlg.h" />
     <ClInclude Include="Maths\Matrix4.h" />
     <ClInclude Include="Engine\UniformBuffer.h" />

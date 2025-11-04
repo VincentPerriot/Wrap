@@ -84,7 +84,7 @@
     <ClCompile Include="Engine\UniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\ImageLoader.cpp">
+    <ClCompile Include="Engine\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -167,7 +167,7 @@
     <ClInclude Include="Engine\VulkanConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\ImageLoader.h">
+    <ClInclude Include="Engine\Image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
