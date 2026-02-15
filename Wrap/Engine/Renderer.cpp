@@ -206,6 +206,7 @@ namespace Engine {
 		// TODO Look into these more carefully and create full structures
 		VkPhysicalDeviceFeatures enabledFeatures{};
 		enabledFeatures.samplerAnisotropy = VK_TRUE;
+		enabledFeatures.sampleRateShading = VK_TRUE;
 
 		VkPhysicalDeviceVulkan13Features features13{};
 		features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -503,8 +504,8 @@ namespace Engine {
 			.pNext = nullptr,
 			.flags = 0,
 			.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-			.sampleShadingEnable = VK_FALSE,
-			.minSampleShading = 1.0f,
+			.sampleShadingEnable = VK_TRUE,
+			.minSampleShading = 0.5f, // TODO - test values [ 0 - 1 ] here
 			.pSampleMask = nullptr,
 			.alphaToCoverageEnable = VK_FALSE,
 			.alphaToOneEnable = VK_FALSE
