@@ -56,6 +56,9 @@ namespace Engine
 			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
 		};
 
+		VK_ASSERT( vkCreateImage( _device, &imageInfo, nullptr, &_image ) );
+
+		VkMemoryRequirements memReq;
 	}
 
 	//----------------------------------------------------------------------------------
