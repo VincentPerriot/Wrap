@@ -31,9 +31,6 @@ namespace Engine
 		vkUnmapMemory( _device, stagingBufferMemory );
 		stbi_image_free( pixels );
 
-		VkImage textureImage;
-		VkDeviceMemory textureImageMemory;
-
 		VkSampleCountFlagBits samples = getMaxSamples( _physDevice );
 		if ( _oMSAASamples.has_value() && _oMSAASamples.value() < samples )
 			samples = _oMSAASamples.value();
@@ -59,6 +56,18 @@ namespace Engine
 		VK_ASSERT( vkCreateImage( _device, &imageInfo, nullptr, &_image ) );
 
 		VkMemoryRequirements memReq;
+		vkGetImageMemoryRequirements( _device, _image, &memReq );
+
+		VkMemoryAllocateInfo info{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+			.pNext = nullptr,
+			.allocationSize = memReq.size,
+			.memoryTypeIndex = VulkanMemory::findMemoryType( _physDevice, memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT )
+		};
+
+		VK_ASSERT( vkAllocateMemory( _device, &info, nullptr, &_imageMemory ) );
+
+		vkBindImageMemory( _device, _image, _imageMemory, 0 );
 	}
 
 	//----------------------------------------------------------------------------------
