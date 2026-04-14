@@ -13,6 +13,7 @@ namespace Engine
 
 	private:
 		static VkSampleCountFlagBits getMaxSamples( VkPhysicalDevice _physDevice );
+		void transitionImageLayout( VkImage _image, VkFormat _format, VkImageLayout _old, VkImageLayout _new );
 	};
 
 } // end namespace Engine

@@ -1,4 +1,5 @@
 #include "VulkanMemory.h"
+#include "VulkanCommands.h"
 
 namespace Engine {
 
@@ -103,25 +104,7 @@ namespace Engine {
 	//------------------------------------------------------------------------------------
 	void VulkanMemory::copyBuffer( VkDevice _device, VkBuffer _source, VkBuffer _dest, VkDeviceSize _size, VkCommandPool _pool, VkQueue _queue )
 	{
-		VkCommandBufferAllocateInfo allocInfo{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-			.pNext = nullptr,
-			.commandPool = _pool,
-			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			.commandBufferCount = 1
-		};
-
-		VkCommandBuffer commandBuffer;
-		VK_ASSERT( vkAllocateCommandBuffers( _device, &allocInfo, &commandBuffer ) );
-
-		VkCommandBufferBeginInfo beginInfo{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-			.pNext = nullptr,
-			.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-			.pInheritanceInfo = nullptr
-		};
-
-		VK_ASSERT( vkBeginCommandBuffer( commandBuffer, &beginInfo ) );
+		VkCommandBuffer commandBuffer = VulkanCommands::beginSingleTimeCommands( _device, _pool );
 
 		VkBufferCopy copyRegion{
 			.srcOffset = 0,
@@ -130,24 +113,8 @@ namespace Engine {
 		};
 
 		vkCmdCopyBuffer( commandBuffer, _source, _dest, 1, &copyRegion );
-		vkEndCommandBuffer( commandBuffer );
 
-		VkSubmitInfo submitInfo{
-			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-			.pNext = nullptr,
-			.waitSemaphoreCount = 0,
-			.pWaitSemaphores = nullptr,
-			.pWaitDstStageMask = nullptr,
-			.commandBufferCount = 1,
-			.pCommandBuffers = &commandBuffer,
-			.signalSemaphoreCount = 0,
-			.pSignalSemaphores = nullptr
-		};
-
-		VK_ASSERT( vkQueueSubmit( _queue, 1, &submitInfo, VK_NULL_HANDLE ) );
-		vkQueueWaitIdle( _queue );
-
-		vkFreeCommandBuffers( _device, _pool, 1, &commandBuffer );
+		VulkanCommands::endSingleTimeCommands( commandBuffer, _device, _pool, _queue );
 	}
 
 }

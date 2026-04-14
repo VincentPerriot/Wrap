@@ -88,4 +88,10 @@ namespace Engine
 		return VK_SAMPLE_COUNT_1_BIT;
 	}
 
+	//----------------------------------------------------------------------------------
+	void Image::transitionImageLayout( VkImage _image, VkFormat _format, VkImageLayout _old, VkImageLayout _new )
+	{
+
+	}
+
 } // end namespace Engine

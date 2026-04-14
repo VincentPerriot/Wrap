@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\VulkanCommands.cpp" />
     <ClCompile Include="Engine\VulkanMemory.cpp" />
     <ClCompile Include="Engine\Image.cpp" />
     <ClCompile Include="Maths\LinAlg.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="Warp\TriangleApp\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\VulkanCommands.h" />
     <ClInclude Include="Engine\VulkanConstants.h" />
     <ClInclude Include="Engine\VulkanMemory.h" />
     <ClInclude Include="Engine\Image.h" />
