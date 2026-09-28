@@ -1,10 +1,10 @@
 #include "VulkanMemory.h"
 #include "VulkanCommands.h"
 
-namespace Engine {
+namespace Engine::VulkanMemory {
 
 	//------------------------------------------------------------------------------------
-	void VulkanMemory::createBuffer( VkDevice _device, VkPhysicalDevice _physDevice, VkDeviceSize _size, VkBufferUsageFlags _usage, VkMemoryPropertyFlags _properties, VkBuffer& _buffer, VkDeviceMemory& _memory )
+	void createBuffer( VkDevice _device, VkPhysicalDevice _physDevice, VkDeviceSize _size, VkBufferUsageFlags _usage, VkMemoryPropertyFlags _properties, VkBuffer& _buffer, VkDeviceMemory& _memory )
 	{
 		VkBufferCreateInfo bufferInfo{
 			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -26,7 +26,7 @@ namespace Engine {
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.pNext = nullptr,
 			.allocationSize = memReqs.size,
-			.memoryTypeIndex = VulkanMemory::findMemoryType( _physDevice, memReqs.memoryTypeBits, _properties )
+			.memoryTypeIndex = findMemoryType( _physDevice, memReqs.memoryTypeBits, _properties )
 		};
 
 		VK_ASSERT( vkAllocateMemory( _device, &allocInfo, nullptr, &_memory ) );
@@ -35,7 +35,7 @@ namespace Engine {
 	}
 
 	//------------------------------------------------------------------------------------
-	void VulkanMemory::createMeshVertexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue )
+	void createMeshVertexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue )
 	{
 		VkDeviceSize size = sizeof( Vertex ) * _mesh.getVertices().size();
 
@@ -59,7 +59,7 @@ namespace Engine {
 	}
 
 	//------------------------------------------------------------------------------------
-	void VulkanMemory::createMeshIndexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue )
+	void createMeshIndexBuffer( VkDevice _device, VkPhysicalDevice _physDevice, const Scene::Mesh& _mesh, VkBuffer& _buffer, VkDeviceMemory& _memory, VkCommandPool _pool, VkQueue _queue )
 	{
 		VkDeviceSize size = sizeof( u16 ) * _mesh.getIndices().size();
 
@@ -83,7 +83,7 @@ namespace Engine {
 	}
 
 	//------------------------------------------------------------------------------------
-	u32 VulkanMemory::findMemoryType( VkPhysicalDevice _physicalDevice, u32 _typeFilter, VkMemoryPropertyFlags _props )
+	u32 findMemoryType( VkPhysicalDevice _physicalDevice, u32 _typeFilter, VkMemoryPropertyFlags _props )
 	{
 		VkPhysicalDeviceMemoryProperties memProps;
 		vkGetPhysicalDeviceMemoryProperties( _physicalDevice, &memProps );
@@ -102,7 +102,7 @@ namespace Engine {
 	}
 
 	//------------------------------------------------------------------------------------
-	void VulkanMemory::copyBuffer( VkDevice _device, VkBuffer _source, VkBuffer _dest, VkDeviceSize _size, VkCommandPool _pool, VkQueue _queue )
+	void copyBuffer( VkDevice _device, VkBuffer _source, VkBuffer _dest, VkDeviceSize _size, VkCommandPool _pool, VkQueue _queue )
 	{
 		VkCommandBuffer commandBuffer = VulkanCommands::beginSingleTimeCommands( _device, _pool );
 
@@ -116,5 +116,4 @@ namespace Engine {
 
 		VulkanCommands::endSingleTimeCommands( commandBuffer, _device, _pool, _queue );
 	}
-
 }

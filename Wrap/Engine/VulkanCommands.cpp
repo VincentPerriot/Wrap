@@ -29,6 +29,8 @@ VkCommandBuffer VulkanCommands::beginSingleTimeCommands( VkDevice _device, VkCom
 //------------------------------------------------------------------------------------
 void VulkanCommands::endSingleTimeCommands( VkCommandBuffer _commandBuffer, VkDevice _device, VkCommandPool _pool, VkQueue _queue )
 {
+	VK_ASSERT( vkEndCommandBuffer( _commandBuffer ) );
+
 	VkSubmitInfo subInfo{
 		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
 		.pNext = nullptr,
@@ -47,7 +49,7 @@ void VulkanCommands::endSingleTimeCommands( VkCommandBuffer _commandBuffer, VkDe
 	VkFence fence;
 
 	VK_ASSERT( vkCreateFence( _device, &vinfo, nullptr, &fence ) );
-	VK_ASSERT( vkQueueSubmit( _queue, 1, &subInfo, VK_NULL_HANDLE ) );
+	VK_ASSERT( vkQueueSubmit( _queue, 1, &subInfo, fence ) );
 	VK_ASSERT( vkWaitForFences( _device, 1, &fence, VK_TRUE, UINT64_MAX ) );
 
 	vkDestroyFence( _device, fence, nullptr );

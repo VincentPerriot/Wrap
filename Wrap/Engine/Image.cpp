@@ -3,11 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "VulkanMemory.h"
+#include "VulkanCommands.h"
 
-namespace Engine
+namespace Engine::VulkanImage
 {
 	//----------------------------------------------------------------------------------
-	void Image::createTextureImage( VkDevice _device, VkPhysicalDevice _physDevice, std::string_view _path, std::optional<VkSampleCountFlagBits> _oMSAASamples,
+	void createTextureImage( VkDevice _device, VkPhysicalDevice _physDevice, VkCommandPool _pool, VkQueue _queue, std::string_view _path, std::optional<VkSampleCountFlagBits> _oMSAASamples,
 		VkImage& _image, VkDeviceMemory& _imageMemory )
 	{
 		int texWidth, texHeight, texChannels;
@@ -68,10 +69,17 @@ namespace Engine
 		VK_ASSERT( vkAllocateMemory( _device, &info, nullptr, &_imageMemory ) );
 
 		vkBindImageMemory( _device, _image, _imageMemory, 0 );
+
+		transitionImageLayout( _device, _pool, _queue, _image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
+		copyBufferToImage( _device, _pool, stagingBuffer, _queue, _image, static_cast<u32>( texWidth ), static_cast<u32>( texHeight ) );
+		transitionImageLayout( _device, _pool, _queue, _image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+
+		vkDestroyBuffer( _device, stagingBuffer, nullptr );
+		vkFreeMemory( _device, stagingBufferMemory, nullptr );
 	}
 
 	//----------------------------------------------------------------------------------
-	VkSampleCountFlagBits Image::getMaxSamples( VkPhysicalDevice _physDevice )
+	VkSampleCountFlagBits getMaxSamples( VkPhysicalDevice _physDevice )
 	{
 		VkPhysicalDeviceProperties physDeviceProps;
 		vkGetPhysicalDeviceProperties( _physDevice, &physDeviceProps );
@@ -89,9 +97,81 @@ namespace Engine
 	}
 
 	//----------------------------------------------------------------------------------
-	void Image::transitionImageLayout( VkImage _image, VkFormat _format, VkImageLayout _old, VkImageLayout _new )
+	void transitionImageLayout( VkDevice _device, VkCommandPool _pool, VkQueue _queue, VkImage _image, VkFormat _format, VkImageLayout _old, VkImageLayout _new )
 	{
+		VkCommandBuffer cmdBuffer = VulkanCommands::beginSingleTimeCommands( _device, _pool );
 
+		VkImageMemoryBarrier barrier{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.pNext = nullptr,
+			.srcAccessMask = 0,
+			.dstAccessMask = 0,
+			.oldLayout = _old,
+			.newLayout = _new,
+			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.image = _image,
+			.subresourceRange = VkImageSubresourceRange {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			}
+		};
+
+		VkPipelineStageFlags sourceStage;
+		VkPipelineStageFlags destinationStage;
+
+		if ( _old == VK_IMAGE_LAYOUT_UNDEFINED && _new == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL )
+		{
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		}
+		else if ( _old == VK_IMAGE_LAYOUT_UNDEFINED && _new == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL )
+		{
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else
+		{
+			assert( false && "Layout transition not supported" );
+		}
+
+		vkCmdPipelineBarrier( cmdBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier );
+
+		VulkanCommands::endSingleTimeCommands( cmdBuffer, _device, _pool, _queue );
+	}
+
+	//----------------------------------------------------------------------------------
+	void copyBufferToImage( VkDevice _device, VkCommandPool _pool, VkBuffer _buffer, VkQueue _queue, VkImage _image, u32 _width, u32 _height )
+	{
+		VkCommandBuffer cmdBuffer = VulkanCommands::beginSingleTimeCommands( _device, _pool );
+
+		VkBufferImageCopy region{
+			.bufferOffset = 0,
+			.bufferRowLength = 0,
+			.bufferImageHeight = 0,
+			.imageSubresource = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = 0,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+			.imageOffset = {0, 0, 0},
+			.imageExtent = {
+				.width = _width,
+				.height = _height,
+				.depth = 1
+			}
+		};
+
+		vkCmdCopyBufferToImage( cmdBuffer, _buffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region );
+
+		VulkanCommands::endSingleTimeCommands( cmdBuffer, _device, _pool, _queue );
 	}
 
 } // end namespace Engine
